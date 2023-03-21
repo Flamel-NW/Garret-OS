@@ -8,6 +8,12 @@ size_t strlen(const char* s) {
     return cnt;
 }
 
+int32_t strcmp(const char* s1, const char* s2) {
+    while (*s1 && *s1 == *s2)
+        s1++, s2++;
+    return (int32_t) (*s1 - *s2);
+}
+
 char* strcpy(char* dst, char* src) {
     char* p = dst;
     while ((*p++ = *src++) != '\0')

@@ -17,7 +17,7 @@ uint16_t SBI_SHUTDOWN = 8;
 // 	∶可能影响的寄存器或存储器 //非必需
 // );
 
-uint64_t sbi_call(uint64_t sbi_type, uint64_t arg0, uint64_t arg1, uint64_t arg2) {
+static uint64_t sbi_call(uint64_t sbi_type, uint64_t arg0, uint64_t arg1, uint64_t arg2) {
     uint64_t ret;
     asm volatile (
         "mv x17, %[sbi_type]\n"
@@ -42,6 +42,14 @@ uint64_t sbi_call(uint64_t sbi_type, uint64_t arg0, uint64_t arg1, uint64_t arg2
     return ret;
 }
 
-void sbi_console_putchar(unsigned char ch) {
+void sbi_console_putchar(uint64_t ch) {
     sbi_call(SBI_CONSOLE_PUTCHAR, ch, 0, 0);
+}
+
+uint64_t sbi_console_getchar() {
+    return sbi_call(SBI_CONSOLE_GETCHAR, 0, 0, 0);
+}
+
+void sbi_set_timer(uint64_t time) {
+    sbi_call(SBI_SET_TIMER, time, 0, 0);
 }

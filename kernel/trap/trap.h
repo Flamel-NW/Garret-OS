@@ -41,9 +41,16 @@ struct registers {
 struct trapframe {
     struct registers pushregs;  // General registers
     uintptr_t sstatus;          // Supervisor Status Register
-    uintptr_t sepc;             // Supervisor exception program counter
-    uintptr_t stval;            // Supervisor trap value
-    uintptr_t scause;           // Scause register: record the cause of exception/interrupt/trap
+    uintptr_t sepc;             // Supervisor Exception Program Counter
+    // warning: 'sbadaddr' is a deprecated alias for 'stval'
+    uintptr_t stval;            // Supervisor Trap Value Register
+    uintptr_t scause;           // Supervisor Cause Register
 };
+
+void trap(struct trapframe* tf);
+void idt_init();
+
+void print_trapframe(struct trapframe* tf);
+void print_registers(struct registers* regs);
 
 #endif // __KERNEL_TRAP_TRAP_H__

@@ -5,6 +5,8 @@
 
 size_t strlen(const char* s);
 
+int32_t strcmp(const char* s1, const char* s2);
+
 char* strcpy(char* dst, char* src);
 
 char* strrev(char* s);

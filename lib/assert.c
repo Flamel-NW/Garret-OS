@@ -1,17 +1,18 @@
 #include "assert.h"
 
 #include "defs.h"
+#include "monitor.h"
 #include "stdio.h"
 #include "intr.h"
 
-static int8_t is_panic = 0;
+static bool is_panic = 0;
 
-void panic_dead() __attribute__((noreturn));
+static void panic_dead() __attribute__((noreturn));
 
-void panic_dead() {
+static void panic_dead() {
     intr_disable();
     while (1)
-        continue;
+        monitor(NULL);
 }
 
 static void putline(uint32_t line) {

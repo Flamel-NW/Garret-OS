@@ -35,7 +35,7 @@ INCLUDE := -I ./lib 	\
 
 CSOURCES := $(wildcard */*.c) $(wildcard */*/*.c) 
 
-SSOURCES := $(wildcard */*.S) 
+SSOURCES := $(wildcard */*.S) $(wildcard */*/*.S)
 
 OBJECTS := $(CSOURCES:.c=.o) $(SSOURCES:.S=.o)
 

@@ -8,4 +8,8 @@ void putch(char ch);
 
 void putstr(const char* str);
 
+char getch();
+
+char* getstr(char* str);
+
 #endif // __LIB_STDIO_H__

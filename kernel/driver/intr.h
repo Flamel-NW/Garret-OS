@@ -2,6 +2,7 @@
 #define __KERNEL_DRIVER_INTR_H__
 
 #include "riscv.h"
+#include "defs.h"
 
 // enable irq interrupt
 static inline void intr_enable() {
