@@ -17,9 +17,7 @@ struct command {
     const char* info;
     // return -1 to force monitor to exit;
     int32_t (*func)(struct trapframe* tf);
-};
-
-static struct command commands[] = {
+} commands[] = {
     { "help", "Display the list of commands.", cmd_help },
     { "info", "Display information about the kernel.", cmd_kernel_info },
     { "backtrace", "Print backtrace of stack frame.", cmd_backtrace }

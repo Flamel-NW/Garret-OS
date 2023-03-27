@@ -12,7 +12,7 @@ static uint64_t timebase = 100000;
 
 static uint64_t get_cycles() {
     uint64_t n;
-    asm volatile (
+    __asm__ volatile (
         "rdtime %0"
         : "=r" (n)
     );

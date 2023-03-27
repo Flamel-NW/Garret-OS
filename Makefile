@@ -1,6 +1,6 @@
 CC := riscv64-unknown-elf-gcc
 
-CFLAGS := -g -Wall -Wno-unused -Werror -std=gnu99
+CFLAGS := -g -Wall -Wno-unused -Werror -std=c11
 CFLAGS += -fno-builtin -nostdinc # 不使用C语言内建函数 不搜索默认路径头文件
 CFLAGS += -fno-stack-protector #禁用堆栈保护
 CFLAGS += -ffunction-sections -fdata-sections # 将每个函数或符号创建为一个sections, 其中每个sections名与function或data名保持一致
@@ -14,24 +14,22 @@ LD_FLAGS := -m elf64lriscv
 LD_FLAGS += -nostdlib 
 LD_FLAGS += --gc-sections  # 配合-ffunction-sections -fdata-sections, 不连接未使用的函数和符号sections, 从而减小可执行文件大小
 
-OBJCOPY := riscv64-unknown-elf-objcopy
-
-OBJCOPY_FLAGS := -S # 不从源文件拷贝符号信息和 relocation 信息.
-OBJCOPY_FLAGS += -O binary # 指定输入目标为二进制文件
-
 QEMU := qemu-system-riscv64
 
-QEMU_FLAGS := -machine virt -nographic -bios default
-
+QEMU_FLAGS := -machine virt -nographic 
 QEMU_DEBUG_FLAGS := -s -S
 
 TARGET := GarretOS
 
-INCLUDE := -I ./lib 	\
-	-I ./kernel/mm 		\
-	-I ./kernel/driver 	\
-	-I ./kernel/trap 	\
-	-I ./kernel/debug 	\
+# 自己写了一个python自动检测头文件路径的脚本小工具
+
+PYTHON := python3
+SCRIPT := include.py
+
+INCLUDE := $(shell $(PYTHON) $(SCRIPT))
+
+# 当然你也可以像这样手动一条一条添加
+# INCLUDE := -I ./ 
 
 CSOURCES := $(wildcard */*.c) $(wildcard */*/*.c) 
 
@@ -65,6 +63,11 @@ clean:
 # 下面的是南开的uCore-OS-riscv64的运行方法, 实测不好使
 # 讨论之后猜测可能是我的这个版本的OpenSBI无法通过addr参数指定起始地址
 # elf格式可以运行因为可以读取起始地址, 而bin文件读不出来
+
+# OBJCOPY := riscv64-unknown-elf-objcopy
+
+# OBJCOPY_FLAGS := -S # 不从源文件拷贝符号信息和 relocation 信息.
+# OBJCOPY_FLAGS += -O binary # 指定输入目标为二进制文件
 
 # $(IMG_TARGET) : $(TARGET)
 # 	$(OBJCOPY) $^ $(OBJCOPY_FLAGS) $@

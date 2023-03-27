@@ -103,12 +103,13 @@
     .endm
 
 
+    .section .text
     .global all_traps
 .align(2)
 all_traps:
     SAVE_ALL
 
-    move a0, sp
+    move a0, sp # trap函数的参数tf
     jal trap
     # sp should be the same as before "jal trap"
 

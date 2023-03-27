@@ -10,6 +10,7 @@
 int32_t kernel_init() __attribute__((noreturn));
 
 int kernel_init() {
+    // 清bss段
     extern char edata[], end[];
     memset(edata, 0, end - edata);
 
@@ -19,13 +20,18 @@ int kernel_init() {
 
     print_kernel_info();
 
+    char ch = 200;
+    if (ch < 0)
+        putstr("char is neg.");
+
     idt_init();
 
     timer_init();
 
     intr_enable();
 
-    asm volatile ( "ebreak" :: );
+    // V I: P27
+    __asm__ volatile ( "ebreak" :: );
 
     while (1)
         continue;

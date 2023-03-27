@@ -10,7 +10,7 @@ uint16_t SBI_REMOTE_SFENCE_VMA = 6;
 uint16_t SBI_REMOTE_SFENCE_VMA_ASID = 7;
 uint16_t SBI_SHUTDOWN = 8;
 
-// asm volatile(
+// __asm__ volatile(
 // 	汇编指令列表
 // 	∶输出操作数 //非必需
 // 	∶输入操作数 //非必需
@@ -19,7 +19,7 @@ uint16_t SBI_SHUTDOWN = 8;
 
 static uint64_t sbi_call(uint64_t sbi_type, uint64_t arg0, uint64_t arg1, uint64_t arg2) {
     uint64_t ret;
-    asm volatile (
+    __asm__ volatile (
         "mv x17, %[sbi_type]\n"
         "mv x10, %[arg0]\n"
         "mv x11, %[arg1]\n"
@@ -35,7 +35,7 @@ static uint64_t sbi_call(uint64_t sbi_type, uint64_t arg0, uint64_t arg1, uint64
         : [sbi_type] "r" (sbi_type), [arg0] "r" (arg0), [arg1] "r" (arg1), [arg2] "r" (arg2) // 同理
         
         // 如果内联汇编中的某个指令以无法预料的形式修改了存储器中的值，
-        // 则必须在asm中第三个冒号后的“可能影响的寄存器或存储器”中显示地加上“memory”，
+        // 则必须在__asm__中第三个冒号后的“可能影响的寄存器或存储器”中显示地加上“memory”，
         // 从而通知GCC编译器不要将存储器中的值暂存在处理器的通用寄存器中。
         : "memory"
     );
@@ -50,6 +50,6 @@ uint64_t sbi_console_getchar() {
     return sbi_call(SBI_CONSOLE_GETCHAR, 0, 0, 0);
 }
 
-void sbi_set_timer(uint64_t time) {
-    sbi_call(SBI_SET_TIMER, time, 0, 0);
+void sbi_set_timer(uint64_t stime) {
+    sbi_call(SBI_SET_TIMER, stime, 0, 0);
 }

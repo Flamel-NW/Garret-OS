@@ -1,11 +1,3 @@
-/**
- * @file kelnel.ld
- * @author Flamel-NW (flamel.nw@qq.com)
- * @brief Simple linker script for Garret-OS kernel.
- *      See the GNU ld 'info' manual ("info ld") to leran the syntax.
- * @date 2023-03-18
- */
-
 OUTPUT_ARCH(riscv)
 ENTRY(kernel_entry)
 
@@ -17,12 +9,17 @@ SECTIONS
     . = BASE_ADDRESS;
     .text : {
         *(.text.kernel_entry)
-        *(.text .stub .text.* .gnu.linkonce.t.*)
+        *(.text)
+        *(.stub)                
+        *(.text.*)               
+        *(.gnu.linkonce.t.*)
     }
     PROVIDE(etext = .); /* Define the 'etext' symbol to this value */
 
     .rodata : {
-        *(.rodata, .rodata.* .gnu.linkonce.t.*)
+        *(.rodata)
+        *(.rodata.*)           
+        *(.gnu.linkonce.t.*)
     }
 
     /* Adjust the address for the data segment to the next page */

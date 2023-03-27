@@ -26,12 +26,9 @@ char* getstr(char* str) {
     char ch;
     while ((ch = getch())) {
         putch(ch);
-        if (ch == '\b' && sp > 0) 
-            sp--;
-        else if (ch == '\n' || ch == '\r') 
-            break;
-        else 
-            str[sp++] = ch;
+        if (ch == '\b' && sp > 0) sp--;
+        else if (ch == '\n' || ch == '\r') break;
+        else str[sp++] = ch;
     }
     str[sp] = '\0';
     return str;
