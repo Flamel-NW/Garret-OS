@@ -1,6 +1,6 @@
 CC := riscv64-unknown-elf-gcc
 
-CFLAGS := -g -Wall -Wno-unused -Werror -std=c11
+CFLAGS := -g -Wall -Wno-unused -Werror -std=gnu11
 CFLAGS += -fno-builtin -nostdinc # 不使用C语言内建函数 不搜索默认路径头文件
 CFLAGS += -fno-stack-protector #禁用堆栈保护
 CFLAGS += -ffunction-sections -fdata-sections # 将每个函数或符号创建为一个sections, 其中每个sections名与function或data名保持一致
@@ -10,7 +10,7 @@ LD := riscv64-unknown-elf-ld
 
 LD_SCRIPT := -T kernel.ld
 
-LD_FLAGS := -m elf64lriscv 
+LD_FLAGS := -m elf64lriscv
 LD_FLAGS += -nostdlib 
 LD_FLAGS += --gc-sections  # 配合-ffunction-sections -fdata-sections, 不连接未使用的函数和符号sections, 从而减小可执行文件大小
 

@@ -6,6 +6,8 @@
 
 - 因为不想copy代码, 所以lib里面的库函数我都实现的比较随意而且简陋, 和标准库很多接口都不同
 
+- 也因此, 我会尽量减少无关代码
+
 - 代码中出现"V I: P1", 这样的注释表示: 参见The RISC-V Instruction Set Manual Volume I Page 1
 
     手册版本:
@@ -20,3 +22,7 @@
         Volume II: Privileged Architecture
 
         Document Version 20211203
+
+## TODO:
+
+- ./kernel/mm: buddy system

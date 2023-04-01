@@ -1,6 +1,9 @@
 #ifndef __KERNEL_DRIVER_RISCV_H__
 #define __KERNEL_DRIVER_RISCV_H__
 
+#include "defs.h"
+
+
 #define LOG_REGBYTES 3
 #define REGBYTES (1 << LOG_REGBYTES)
 
@@ -30,35 +33,74 @@
 #define SIR_STI (1 << (SCAUSE_STI & 0x7FFFFFFFFFFFFFFF))
 #define SIR_SEI (1 << (SCAUSE_SEI & 0x7FFFFFFFFFFFFFFF))
 
-// %数字从0开始依次表示输出操作数和输入操作数, 如%0表示temp, %1表示rs1
+// 语句表达式是C语言的一种特性, 它允许我们将多条语句组合成一个表达式, 
+// 并且这个表达式的值就是最后一条语句的值
 
-// CSRW csr, rs - V I: P139
+// 语句表达式通常用在需要返回多个值或需要执行多个语句但只能返回一个值的场景中通过语句表达式, 
+// 我们可以在一个表达式中执行多个语句, 并将这些语句的结果封装为一个值返回
+
+// 语句表达式的基本语法如下：
+// ({ statement1; statement2; ... statementN; result_expression; })
+
+// 其中, 大括号包裹的语句序列是语句表达式的实体, 最后的表达式就是语句表达式的值
+
+// 下面这些宏函数用这种方法让宏函数能够返回值
+
+// "%数字" 从0开始依次表示输出操作数和输入操作数, 如%0表示rd, %1表示rs1
+
+// CSRR rd, csr - V I: P140
+#define CSRR(csr) ({                \
+    uint64_t rd;                    \
+    __asm__ volatile (              \
+        "csrr %0, " #csr            \
+        : "=r" (rd)                 \
+    );                              \
+    rd;                             \
+})
+
+// CSRW csr, rs - V I: P140
 #define CSRW(csr, rs) ({            \
-    __asm__ volatile (                  \
+    __asm__ volatile (              \
         "csrw " #csr ", %0"         \
         :: "r"(rs)                  \
     );                              \
 })
 
-// temp变量应该是单纯占位用的
 // CSRRS rd, csr, rs1 - V I: P56
 #define CSRRS(csr, rs1) ({          \
-    uint64_t temp;                  \
-    __asm__ volatile (                  \
+    uint64_t rd;                    \
+    __asm__ volatile (              \
         "csrrs %0, " #csr ", %1"    \
-        : "=r" (temp)               \
+        : "=r" (rd)                 \
         : "r" (rs1)                 \
     );                              \
+    rd;                             \
 })
 
 // CSRRC rd, csr, rs1 - V I: P56
 #define CSRRC(csr, rs1) ({          \
-    uint64_t temp;                  \
-    __asm__ volatile (                  \
+    uint64_t rd;                    \
+    __asm__ volatile (              \
         "csrrc %0, " #csr ", %1"    \
-        : "=r" (temp)               \
+        : "=r" (rd)                 \
         : "r" (rs1)                 \
     );                              \
+    rd;                             \
 })
+
+// AMO rd, rs2, (rs1) - V I: P52
+// "+" 代表该变量既作为输入也作为输出, 原值输入进行运算后输出值更新该值
+// "A" 代表一个存放在通用寄存器中的地址
+
+#define AMO_OP_D(op, rs2, rs1) ({   \
+    uint64_t rd;                    \
+    __asm__ volatile (              \
+        "amo" #op ".d %0, %2, %1"   \
+        : "=r" (rd), "+A" (rs1)     \
+        : "r" (rs2)                 \
+    );                              \
+    rd;                             \
+})
+
 
 #endif // __KERNEL_DRIVER_RISCV_H__

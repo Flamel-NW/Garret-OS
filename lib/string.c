@@ -23,8 +23,7 @@ char* strcpy(char* dst, char* src) {
 
 char* strrev(char* s) {
     size_t len = strlen(s);
-    size_t i;
-    for (i = 0; i < len / 2; i++) {
+    for (size_t i = 0; i < len / 2; i++) {
         char temp = s[i];
         s[i] = s[len - 1 - i];
         s[len - 1 - i] = temp;

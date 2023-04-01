@@ -26,8 +26,7 @@ struct command {
 #define NUM_COMMANDS (sizeof(commands) / sizeof(struct command))
 
 static int32_t run_cmd(char* cmd_name, struct trapframe* tf) {
-    int i;
-    for (i = 0; i < NUM_COMMANDS; i++)
+    for (uint32_t i = 0; i < NUM_COMMANDS; i++)
         if (strcmp(cmd_name, commands[i].name) == 0)
             return commands[i].func(tf);
     putstr("Unknown command \'"); putstr(cmd_name); putstr("\'\n");
@@ -45,8 +44,7 @@ void monitor(struct trapframe* tf) {
 
 // cmd_help - print the information about commands
 static int32_t cmd_help(struct trapframe* tf) {
-    int32_t i;
-    for (i = 0; i < NUM_COMMANDS; i++) {
+    for (uint32_t i = 0; i < NUM_COMMANDS; i++) {
         putstr(commands[i].name);
         putstr(" - ");
         putstr(commands[i].info);

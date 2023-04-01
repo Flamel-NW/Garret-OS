@@ -3,9 +3,9 @@
 
 #include "defs.h"
 
-extern volatile size_t ticks;
+extern volatile size_t g_ticks;
 
-void timer_init();
+void init_timer();
 void timer_next();
 
 #endif

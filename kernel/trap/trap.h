@@ -48,7 +48,7 @@ struct trapframe {
 };
 
 void trap(struct trapframe* tf);
-void idt_init();
+void init_idt();
 
 void print_trapframe(struct trapframe* tf);
 void print_registers(struct registers* regs);

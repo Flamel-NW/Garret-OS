@@ -20,7 +20,7 @@ static void interrupt_handler(struct trapframe* tf) {
         case SCAUSE_STI:
             // putstr("Supervisor timer interrupt\n");
             timer_next();
-            if (++ticks % TICKS_NUM == 0)
+            if (++g_ticks % TICKS_NUM == 0)
                 print_ticks();
             break;
         case SCAUSE_SEI:
@@ -33,6 +33,7 @@ static void exception_handler(struct trapframe* tf) {
     switch (tf->scause) {
         case SCAUSE_B:
             putstr("ebreak caught at 0x"); putstr(uptrtoa(tf->sepc, 16)); putch('\n');
+            putch('\n');
             tf->sepc += 2;
             break;
         default:
@@ -48,13 +49,14 @@ void trap(struct trapframe* tf) {
 }
 
 // Load supervisor trap entry in RISC-V
-void idt_init() {
+void init_idt() {
     extern void all_traps();
     // Set sscratch register to 0, indicating to exception vector that we are
     // presently executing in the kernel
     CSRW(sscratch, 0);
     // Set the exception vector address
     CSRW(stvec, all_traps);
+    putstr("init idt\n\n");
 }
 
 void print_trapframe(struct trapframe* tf) {
@@ -64,6 +66,7 @@ void print_trapframe(struct trapframe* tf) {
     putstr("\tsepc\t0x"); putstr(uptrtoa(tf->sepc, 16)); putch('\n');
     putstr("\tstval\t0x"); putstr(uptrtoa(tf->stval, 16)); putch('\n');
     putstr("\tscause\t0x"); putstr(uptrtoa(tf->scause, 16)); putch('\n');
+    putch('\n');
 }
 
 void print_registers(struct registers* regs) {
@@ -99,4 +102,5 @@ void print_registers(struct registers* regs) {
     putstr("\tt4\t0x"); putstr(uptrtoa(regs->t4, 16)); putch('\n');
     putstr("\tt5\t0x"); putstr(uptrtoa(regs->t5, 16)); putch('\n');
     putstr("\tt6\t0x"); putstr(uptrtoa(regs->t6, 16)); putch('\n');
+    putch('\n');
 }

@@ -21,24 +21,30 @@ static void putline(uint32_t line) {
     putch(line % 10 + '0');
 }
 
-void warn(const char* file, int32_t line, const char* str) {
+void warn(const char* file, const char* func, int32_t line, const char* str) {
     putstr("kernel warning at file: ");
     putstr(file);
+    putstr(", func: ");
+    putstr(func);
     putstr(", line: ");
-    putline(__LINE__);
+    putline(line);
     putstr(".\n");
     putstr(str);
     putch('\n');
+    putch('\n');
 }
 
-void panic(const char* file, int32_t line, const char* str) {
+void panic(const char* file, const char* func, int32_t line, const char* str) {
     if (!is_panic) {
         putstr("kernel panic at file: ");
         putstr(file);
+        putstr(", func: ");
+        putstr(func);
         putstr(", line: ");
-        putline(__LINE__);
+        putline(line);
         putstr(".\n");
         putstr(str);
+        putch('\n');
         putch('\n');
     } 
     panic_dead();

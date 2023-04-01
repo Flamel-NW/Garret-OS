@@ -6,27 +6,28 @@
 #include "debug.h"
 #include "timer.h"
 #include "trap.h"
+#include "pmm.h"
 
-int32_t kernel_init() __attribute__((noreturn));
+int32_t init_kernel() __attribute__((noreturn));
 
-int kernel_init() {
+int32_t init_kernel() {
     // 清bss段
     extern char edata[], end[];
     memset(edata, 0, end - edata);
 
     putstr("\n\n---Garret-OS is loading...---\n");
     putstr("Github:\thttps://github.com/Flamel-NW/Garret-OS\n");
-    putstr("Email:\tflamel.nw@qq.com\n\n");
+    putstr("Email:\tflamel.nw@qq.com\n\n\n");
 
+    print_memory_info();
     print_kernel_info();
 
-    char ch = 200;
-    if (ch < 0)
-        putstr("char is neg.");
+    init_idt();
 
-    idt_init();
+    init_pmm();
+    print_pages_info();
 
-    timer_init();
+    init_timer();
 
     intr_enable();
 

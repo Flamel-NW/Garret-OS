@@ -29,7 +29,7 @@ static uint64_t sbi_call(uint64_t sbi_type, uint64_t arg0, uint64_t arg1, uint64
         // 我们还需要自己通过内联汇编把返回值拿到我们的变量里
 
         // 字母"r"表示使用编译器自动分配的寄存器来存储该操作数变量
-        // 对于"输出操作数"而言，"="代表输出变量用作输出，原来的值会被新值替换    
+        // 对于"输出操作数"而言，"="代表变量用作输出，原来的值会被新值替换    
         "mv %[ret], x10"
         : [ret] "=r" (ret)  // 将mv指令的目标操作数ret_val和C程序中的变量ret_val绑定
         : [sbi_type] "r" (sbi_type), [arg0] "r" (arg0), [arg1] "r" (arg1), [arg2] "r" (arg2) // 同理

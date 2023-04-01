@@ -2,12 +2,14 @@ OUTPUT_ARCH(riscv)
 ENTRY(kernel_entry)
 
 BASE_ADDRESS = 0x80200000;
+VIRTUAL_ADDRESS = 0xFFFFFFFFC0200000;
 
-SECTIONS
+SECTIONS 
 {
     /* Load the kernel at this address: "." means the current address */
-    . = BASE_ADDRESS;
-    .text : {
+    . = VIRTUAL_ADDRESS;
+    .text : AT (BASE_ADDRESS)
+    {
         *(.text.kernel_entry)
         *(.text)
         *(.stub)                
@@ -16,7 +18,8 @@ SECTIONS
     }
     PROVIDE(etext = .); /* Define the 'etext' symbol to this value */
 
-    .rodata : {
+    .rodata : 
+    {
         *(.rodata)
         *(.rodata.*)           
         *(.gnu.linkonce.t.*)
@@ -26,18 +29,21 @@ SECTIONS
     . = ALIGN(0x1000); 
 
     /* The data segment */
-    .data : {
+    .data : 
+    {
         *(.data)
         *(.data.*)
     }
 
-    .sdata : {
+    .sdata : 
+    {
         *(.sdata)
         *(.sdata.*)
     }
     PROVIDE(edata = .); /* Define the 'edata' symbol to this value */
 
-    .bss : {
+    .bss : 
+    {
         *(.bss)
         *(.bss.*)
         *(.sbss*)
