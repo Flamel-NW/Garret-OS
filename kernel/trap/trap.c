@@ -1,15 +1,25 @@
 #include "trap.h"
 
+#include "assert.h"
 #include "defs.h"
 #include "riscv.h"
 #include "stdio.h"
 #include "stdlib.h"
 #include "timer.h"
+#include "vmm.h"
+#include "intr.h"
 
 #define TICKS_NUM 100
 
 static inline void print_ticks() {
-    putstr(ui8toa(TICKS_NUM, 10)); putstr(" ticks\n");
+    putstr(u8toa(TICKS_NUM, 10)); putstr(" ticks\n");
+}
+
+static int32_t page_fault_handler(struct trapframe* tf) {
+    putstr("paged fault at 0x"); putstr(uptrtoa(tf->stval, 16)); putch('\n');
+    if (g_check_vmm) 
+        return handle_page_fault(g_check_vmm, tf->stval);
+    PANIC("unhandled page fault!");
 }
 
 static void interrupt_handler(struct trapframe* tf) {
@@ -20,21 +30,81 @@ static void interrupt_handler(struct trapframe* tf) {
         case SCAUSE_STI:
             // putstr("Supervisor timer interrupt\n");
             timer_next();
-            if (++g_ticks % TICKS_NUM == 0)
+            if (!(++g_ticks % TICKS_NUM))
                 print_ticks();
             break;
         case SCAUSE_SEI:
             putstr("Supervisor external interrupt\n");
             break;
+        default:
+            print_trapframe(tf);
+            break;
     }
 }
 
 static void exception_handler(struct trapframe* tf) {
+    int32_t errno;
     switch (tf->scause) {
+        case SCAUSE_IAM:
+            putstr("Instruction address misaligned\n");
+            break;
+        case SCAUSE_IAF:
+            putstr("Instruction access fault\n");
+            break;
+        case SCAUSE_II:
+            putstr("Illegal instruction\n");
+            break;
         case SCAUSE_B:
+            putstr("Breakpoint\n");
             putstr("ebreak caught at 0x"); putstr(uptrtoa(tf->sepc, 16)); putch('\n');
-            putch('\n');
             tf->sepc += 2;
+            break;
+        case SCAUSE_LAM:
+            putstr("Load address misaligned\n");
+            break;
+        case SCAUSE_LAF:
+            putstr("Load access fault\n");
+            if ((errno = page_fault_handler(tf))) {
+                print_trapframe(tf); 
+                putstr("ERRNO: "); putstr(i32toa(errno, 10)); putch('\n');
+                PANIC("handle page fault failed.");
+            }
+            break;
+        case SCAUSE_SAM:
+            putstr("Store/AMO address misaligned\n");
+            break;
+        case SCAUSE_SAF:
+            putstr("Store/AMO access fault\n");
+            if ((errno = page_fault_handler(tf))) {
+                print_trapframe(tf); 
+                putstr("ERRNO: "); putstr(i32toa(errno, 10)); putch('\n');
+                PANIC("handle page fault failed.");
+            }
+            break;
+        case SCAUSE_ECFU:
+            putstr("Environment call from U-mode\n");
+            break;
+        case SCAUSE_ECFS:
+            putstr("Environment call from S-mode\n");
+            break;
+        case SCAUSE_IPF:
+            putstr("Instruction page fault\n");
+            break;
+        case SCAUSE_LPF:
+            putstr("Load page fault\n");
+            if ((errno = page_fault_handler(tf))) {
+                print_trapframe(tf); 
+                putstr("ERRNO: "); putstr(i32toa(errno, 10)); putch('\n');
+                PANIC("handle page fault failed.");
+            }
+            break;
+        case SCAUSE_SPF:
+            putstr("Store/AMO page fault\n");
+            if ((errno = page_fault_handler(tf))) {
+                print_trapframe(tf); 
+                putstr("ERRNO: "); putstr(i32toa(errno, 10)); putch('\n');
+                PANIC("handle page fault failed.");
+            }
             break;
         default:
             print_trapframe(tf);
@@ -56,6 +126,7 @@ void init_idt() {
     CSRW(sscratch, 0);
     // Set the exception vector address
     CSRW(stvec, all_traps);
+    intr_enable();
     putstr("init idt\n\n");
 }
 

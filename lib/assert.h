@@ -7,11 +7,11 @@ void warn(const char* file, const char* func, int32_t line, const char* str);
 
 void panic(const char* file, const char* func, int32_t line, const char* str) __attribute__((noreturn));
 
-#define WARN(str) warn(__FILE__, __func__, __LINE__, str);
+#define WARN(str) do warn(__FILE__, __func__, __LINE__, str); while(0)
 
-#define PANIC(str) panic(__FILE__, __func__, __LINE__, str);
+#define PANIC(str) do panic(__FILE__, __func__, __LINE__, str); while(0)
 
-#define ASSERT(x) do if(!(x)) PANIC("assertion failed: " #x) while(0)
+#define ASSERT(x) do if(!(x)) PANIC("assertion failed: " #x); while(0)
     
 
 #endif

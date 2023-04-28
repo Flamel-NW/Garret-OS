@@ -1,9 +1,9 @@
 #include "assert.h"
 
 #include "defs.h"
-#include "monitor.h"
 #include "stdio.h"
 #include "intr.h"
+#include "string.h"
 
 static bool is_panic = 0;
 
@@ -12,13 +12,25 @@ static void panic_dead() __attribute__((noreturn));
 static void panic_dead() {
     intr_disable();
     while (1)
-        monitor(NULL);
+        continue;;
 }
 
 static void putline(uint32_t line) {
     if (!line) return;
-    putline(line / 10);
-    putch(line % 10 + '0');
+    static char st[128];
+    if (!line) {
+        st[0] = '0';
+        st[1] = '\0';
+    } else {
+        uint8_t sp = 0;
+        while (line) {
+            st[sp++] = line % 10 + '0';
+            line /= 10;
+        }
+        st[sp] = '\0';
+        strrev(st);
+    } 
+    putstr(st);
 }
 
 void warn(const char* file, const char* func, int32_t line, const char* str) {

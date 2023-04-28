@@ -4,9 +4,11 @@
 #include "stdlib.h"
 #include "string.h"
 #include "debug.h"
+#include "swap.h"
 #include "timer.h"
 #include "trap.h"
 #include "pmm.h"
+#include "vmm.h"
 
 int32_t init_kernel() __attribute__((noreturn));
 
@@ -22,14 +24,15 @@ int32_t init_kernel() {
     print_memory_info();
     print_kernel_info();
 
-    init_idt();
-
     init_pmm();
     print_pages_info();
 
-    init_timer();
+    init_idt();
 
-    intr_enable();
+    init_swap();
+    check_vmm();
+
+    init_timer();
 
     // V I: P27
     __asm__ volatile ( "ebreak" :: );

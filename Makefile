@@ -1,6 +1,6 @@
 CC := riscv64-unknown-elf-gcc
 
-CFLAGS := -g -Wall -Wno-unused -Werror -std=gnu11
+CFLAGS := -g -Wall -Wno-unused -Werror -std=c11
 CFLAGS += -fno-builtin -nostdinc # 不使用C语言内建函数 不搜索默认路径头文件
 CFLAGS += -fno-stack-protector #禁用堆栈保护
 CFLAGS += -ffunction-sections -fdata-sections # 将每个函数或符号创建为一个sections, 其中每个sections名与function或data名保持一致

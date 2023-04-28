@@ -25,7 +25,6 @@ typedef unsigned char byte;
 typedef unsigned char bool;
 
 /* Explicitly-sized versions of integer types */
-// 该机器char类型无符号
 typedef signed char int8_t;                 
 typedef unsigned char uint8_t;
 typedef short int16_t;
@@ -46,29 +45,24 @@ typedef uint64_t uintptr_t;
 /* size_t is used for memory object sizes */
 typedef uintptr_t size_t;
 
+static inline size_t rounddown(size_t a, size_t n) {
+    return (a / n) * n;
+}
+
+static inline size_t roundup(size_t a, size_t n) {
+    return ((a + n - 1) / n) * n;
+}
+
 #endif // __ASSEMBLER__
 
 
-// Round down to the nearest multiple of n
-#define ROUNDDOWN(a, n) ({                                      \
-    size_t temp_a = (size_t) (a);                               \
-    (typeof(a))(temp_a - temp_a % (n));                         \
-})
-
-// Round up to the nearest multiple of n
-#define ROUNDUP(a, n) ({                                        \
-    size_t temp_n = (size_t) (n);                               \
-    (typeof(a)) (ROUNDDOWN((size_t) (a) + temp_n - 1, temp_n)); \
-})
-
-
 // Return the offset of "membor" relative to the beginning of a struct type
-#define offset_of(type, member)                                 \
+#define OFFSET_OF(type, member)                                 \
     ((size_t) (&((type*) 0)->member))
 
-// to_struct - get the struct from a ptr of member
-#define to_struct(type, member, ptr)                            \
-    ((type*) ((byte*) (ptr) - offset_of(type, member)))
+// TO_STRUCT - get the struct from a ptr of member
+#define TO_STRUCT(type, member, ptr)                            \
+    ((type*) ((byte*) (ptr) - OFFSET_OF(type, member)))
 
 
 #endif // __LIB_DEFS_H__

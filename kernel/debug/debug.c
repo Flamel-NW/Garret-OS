@@ -30,11 +30,11 @@ void print_memory_info() {
     putstr("\tKERNEL_BEGIN_PA\t0x80200000\n");
     putstr("\tKERNEL_BEGIN_VA\t0xFFFFFFFFC0200000\n");
 
-    putstr("\tKERNEL_END_PA\t0x81000000\n");
-    putstr("\tKERNEL_END_VA\t0xFFFFFFFFC1000000\n");
+    putstr("\tKERNEL_END_PA\t0x82000000\n");
+    putstr("\tKERNEL_END_VA\t0xFFFFFFFFC2000000\n");
 
-    putstr("\tFREE_BEGIN_PA\t0x81000000\n");
-    putstr("\tFREE_BEGIN_VA\t0xFFFFFFFFC1000000\n");
+    putstr("\tFREE_BEGIN_PA\t0x82000000\n");
+    putstr("\tFREE_BEGIN_VA\t0xFFFFFFFFC2000000\n");
 
     putstr("\tFREE_END_PA\t0x88000000\n");
     putstr("\tFREE_END_VA\t0xFFFFFFFFC8000000\n\n");
@@ -43,22 +43,45 @@ void print_memory_info() {
 void print_pages_info () {
     putstr("Pages infomation:\n");
 
-    putstr("\tkernel-reserved pages begin\n");
-    putstr("\t\t\t0x"); putstr(uptrtoa((uintptr_t) g_kernel_pages, 16)); putstr("\t(virtual)\n");
+    putstr("\tg_pages begin\n"); 
+    putstr("\t\t\t0x"); putstr(uptrtoa((uintptr_t) g_pages, 16)); putstr("\t(virtual)\n");
     
-    putstr("\tnumber of kernel-reserved pages\n");
+    putstr("\tg_pages end\n"); 
+    putstr("\t\t\t0x"); 
+    putstr(uptrtoa((uintptr_t) (g_pages + g_num_qemu_pages + g_num_kernel_pages + g_num_free_pages), 16));
+    putstr("\t(virtual)\n");
+    
+    putstr("\tnumber of qemu-reserved pages (0 ~ DRAM_BASE)\n");
+    putstr("\t\t\t"); putstr(uptrtoa((uintptr_t) g_num_qemu_pages, 10)); putch('\n');
+
+    putstr("\tnumber of kernel-reserved pages (DRAM_BASE ~ KERNEL_END)\n");
     putstr("\t\t\t"); putstr(uptrtoa((uintptr_t) g_num_kernel_pages, 10)); putch('\n');
 
-    putstr("\tkernel(-reserved pages) end & free memory/pages begin\n");
-    putstr("\t\t\t0x"); putstr(uptrtoa((uintptr_t) KERNEL_END_VA, 16)); putstr("\t(virtual)\n");
-
-    putstr("\tnumber of free pages\n");
-    putstr("\t\t\t"); putstr(uptrtoa((uintptr_t) FREE_PAGES, 10)); putch('\n');
-
-    putstr("\tfree memory/pages end\n");
-    putstr("\t\t\t0x"); putstr(uptrtoa((uintptr_t) FREE_END_VA, 16)); putstr("\t(virtual)\n\n");
+    putstr("\tnumber of free pages (FREE_BEGIN ~ FREE_END)\n");
+    putstr("\t\t\t"); putstr(uptrtoa((uintptr_t) g_num_free_pages, 10)); putch('\n');
 }
 
-void print_stack_frame() {
-    // 没写
+static inline void print_list_entry(struct list* entry) {
+    putstr("0x"); putstr(uptrtoa((uintptr_t) entry->prev, 16));
+    putstr(" <- 0x"); putstr(uptrtoa((uintptr_t) entry, 16));
+    putstr(" -> 0x"); putstr(uptrtoa((uintptr_t) entry->next, 16));
+    putch('\n');
 }
+
+void print_list(struct list* entry) {
+    print_list_entry(entry);
+    struct list* list = entry->prev;
+    putstr("entry 0x"); putstr(uptrtoa((uintptr_t) entry, 16)); putstr(" prev :\n");
+    while (list->prev != list && list != entry) {
+        print_list_entry(list);
+        list = list->prev;
+    }
+    list = entry->next;
+    putstr("entry 0x"); putstr(uptrtoa((uintptr_t) entry, 16)); putstr(" next :\n");
+    while (list->next != list && list != entry) {
+        print_list_entry(list);
+        list = list->next;
+    }
+    putch('\n');
+}
+
