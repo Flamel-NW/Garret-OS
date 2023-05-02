@@ -4,6 +4,7 @@
 #include "defs.h"
 #include "list.h"
 #include "page.h"
+#include "errno.h"
 
 static inline void flush_tlb() {
     __asm__ volatile ( "sfence.vma" );

@@ -9,12 +9,13 @@
 #include "trap.h"
 #include "pmm.h"
 #include "vmm.h"
+#include "proc.h"
 
 int32_t init_kernel() __attribute__((noreturn));
 
 int32_t init_kernel() {
     // 清bss段
-    extern char edata[], end[];
+    extern byte edata[], end[];
     memset(edata, 0, end - edata);
 
     putstr("\n\n---Garret-OS is loading...---\n");
@@ -32,11 +33,12 @@ int32_t init_kernel() {
     init_swap();
     check_vmm();
 
+    init_proc();
+
     init_timer();
 
     // V I: P27
     __asm__ volatile ( "ebreak" :: );
 
-    while (1)
-        continue;
+    run_idle();
 }

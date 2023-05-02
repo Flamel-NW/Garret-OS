@@ -30,7 +30,7 @@ void swap_set_unswappable(struct vm_manager* vmm, struct page* page) {
 
 void init_swap() {
     g_swap_manager = &g_fifo_swap_manager;
-    putstr("swap manager: "); putstr(g_swap_manager->name); putch('\n');
+    putstr("swap manager: "); putstr(g_swap_manager->name); putstr("\n\n");
     g_swap_init_flag = 1;
     check_swap();
 }
@@ -119,7 +119,7 @@ static void check_swap() {
     
     putstr("begin check swap: count "); putstr(u32toa(count, 10));
     putstr(", total "); putstr(u32toa(total, 10));
-    putch('\n');
+    putstr("\n\n");
 
     // now we set the physical pages environment
     struct vm_manager* vmm = init_vmm();
@@ -139,7 +139,7 @@ static void check_swap() {
     putstr("setup Page Table for va 0x1000 ~ 0x6000, so alloc a page\n");
     pte_t* t_p_pte = get_pte(vmm->p_gpte, CHECK_VA_BEGIN, 1);
     ASSERT(t_p_pte != NULL);
-    putstr("setup Page Table va 0x1000 ~ 0x6000 OVER!\n");
+    putstr("setup Page Table va 0x1000 ~ 0x6000 OVER!\n\n");
 
     struct page* check_pages[NUM_CHECK_PAGES];
     for (uint32_t i = 0; i < NUM_CHECK_PAGES - 1; i++) {
@@ -157,7 +157,7 @@ static void check_swap() {
 
     ASSERT(get_free_area()->num_free == NUM_CHECK_PAGES - 1);
 
-    putstr("set up init env for check begin!\n");
+    putstr("set up init env for check begin: \n\n");
 
     g_num_page_fault = 0;
     check_content_set();
@@ -177,7 +177,7 @@ static void check_swap() {
         ASSERT((*check_p_ptes[i] & PTE_V) != 0);
     }
 
-    putstr("set up init env for check begin!\n");
+    putstr("\nset up init env for check over!\n\n");
 
     // now access the virt pages to test page relpacement algorithm 
     g_swap_manager->check();
@@ -197,9 +197,9 @@ static void check_swap() {
     }
     putstr("end check swap: count "); putstr(u32toa(count, 10));
     putstr(", total "); putstr(u32toa(total, 10));
-    putch('\n');
+    putstr("\n\n");
 
     g_satp[0] = 0;
     
-    putstr("check_swap() succeeded!\n"); 
+    putstr("check_swap() succeed!\n\n"); 
 }

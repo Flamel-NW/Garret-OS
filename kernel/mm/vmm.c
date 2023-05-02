@@ -111,7 +111,7 @@ void check_vmm() {
     // Sv39第二级页表多占了一个内存页
     ASSERT(num_free_pages - 1 == count_free_pages());
 
-    putstr("check_vmm succeeded\n\n");
+    putstr("check_vmm succeed!\n\n");
 }
 
 int32_t handle_page_fault(struct vm_manager* vmm, uintptr_t addr) {
@@ -216,7 +216,7 @@ static void check_vma_struct(void) {
 
     ASSERT(num_free_pages == count_free_pages());
 
-    putstr("check_vma_struct() succeeded!\n");
+    putstr("check_vma_struct() succeed!\n\n");
 }
 
 
@@ -265,6 +265,6 @@ static void check_page_fault(void) {
     // Sv39第二级页表多占了一个内存页
     ASSERT(num_free_pages - 1 == count_free_pages());
 
-    putstr("check_page_fault() succeeded!\n");
+    putstr("\ncheck_page_fault() succeed!\n\n");
 }
 

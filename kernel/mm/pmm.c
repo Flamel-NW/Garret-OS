@@ -91,7 +91,7 @@ struct free_area* get_free_area() {
 }
 
 static void init_page() {
-    extern char end[];
+    extern byte end[];
 
     g_pages = (struct page*) roundup((size_t) end, PAGE_SIZE);
 
@@ -127,7 +127,7 @@ void init_pmm() {
     // then use pmm->init_memmap to create free page list
     init_page();
 
-    extern char boot_page_table_sv39[];
+    extern byte boot_page_table_sv39[];
     g_satp = (pte_t*) boot_page_table_sv39;
 
     // use pmm->check to verify the correctness of the alloc/free function in a pmm
@@ -316,5 +316,5 @@ static void check_page() {
 
     ASSERT(num_free_pages == count_free_pages());
 
-    putstr("page check succeed!\n\n");
+    putstr("check_page() succeed!\n\n");
 }

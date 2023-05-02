@@ -7,7 +7,11 @@
 #define LOG_REGBYTES 3
 #define REGBYTES (1 << LOG_REGBYTES)
 
-#define SSTATUS_SIE 0x00000002          // V II: P64
+// V II: P64
+#define SSTATUS_SIE     0x00000002          
+#define SSTATUS_SPIE    0x00000020
+#define SSTATUS_UBE     0x00000040
+#define SSTATUS_SPP     0x00000100
 
 // V II: P71
 #define SCAUSE_INTR ((uint64_t) 1 << 63)

@@ -39,7 +39,7 @@ struct registers {
 };
 
 struct trapframe {
-    struct registers pushregs;  // General registers
+    struct registers regs;      // General registers
     uintptr_t sstatus;          // Supervisor Status Register
     uintptr_t sepc;             // Supervisor Exception Program Counter
     // warning: 'sbadaddr' is a deprecated alias for 'stval'

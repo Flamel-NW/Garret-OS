@@ -5,6 +5,7 @@
 #include "defs.h"
 #include "memlayout.h"
 #include "page.h"
+#include "errno.h"
 
 
 // pages (include kernel-reserved and free)

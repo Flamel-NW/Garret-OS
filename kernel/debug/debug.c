@@ -10,7 +10,7 @@
 // of kernel entry, the start addresses of data and text segements, the start
 // address of free memory and how many mamory that kernel has used.
 void print_kernel_info() {
-    extern char etext[], edata[], end[], init_kernel[];
+    extern byte etext[], edata[], end[], init_kernel[];
     putstr("Special kernel symbols:\n");
     putstr("\tentry\t\t0x"); putstr(uptrtoa((uintptr_t) init_kernel, 16)); putstr("\t(virtual)\n");
     putstr("\tetext\t\t0x"); putstr(uptrtoa((uintptr_t) etext, 16)); putstr("\t(virtual)\n");
@@ -58,30 +58,7 @@ void print_pages_info () {
     putstr("\t\t\t"); putstr(uptrtoa((uintptr_t) g_num_kernel_pages, 10)); putch('\n');
 
     putstr("\tnumber of free pages (FREE_BEGIN ~ FREE_END)\n");
-    putstr("\t\t\t"); putstr(uptrtoa((uintptr_t) g_num_free_pages, 10)); putch('\n');
-}
-
-static inline void print_list_entry(struct list* entry) {
-    putstr("0x"); putstr(uptrtoa((uintptr_t) entry->prev, 16));
-    putstr(" <- 0x"); putstr(uptrtoa((uintptr_t) entry, 16));
-    putstr(" -> 0x"); putstr(uptrtoa((uintptr_t) entry->next, 16));
-    putch('\n');
-}
-
-void print_list(struct list* entry) {
-    print_list_entry(entry);
-    struct list* list = entry->prev;
-    putstr("entry 0x"); putstr(uptrtoa((uintptr_t) entry, 16)); putstr(" prev :\n");
-    while (list->prev != list && list != entry) {
-        print_list_entry(list);
-        list = list->prev;
-    }
-    list = entry->next;
-    putstr("entry 0x"); putstr(uptrtoa((uintptr_t) entry, 16)); putstr(" next :\n");
-    while (list->next != list && list != entry) {
-        print_list_entry(list);
-        list = list->next;
-    }
-    putch('\n');
+    putstr("\t\t\t"); putstr(uptrtoa((uintptr_t) g_num_free_pages, 10)); 
+    putstr("\n\n");
 }
 

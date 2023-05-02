@@ -56,7 +56,8 @@ static void exception_handler(struct trapframe* tf) {
             break;
         case SCAUSE_B:
             putstr("Breakpoint\n");
-            putstr("ebreak caught at 0x"); putstr(uptrtoa(tf->sepc, 16)); putch('\n');
+            putstr("ebreak caught at 0x"); putstr(uptrtoa(tf->sepc, 16));
+            putstr("\n\n");
             tf->sepc += 2;
             break;
         case SCAUSE_LAM:
@@ -132,7 +133,7 @@ void init_idt() {
 
 void print_trapframe(struct trapframe* tf) {
     putstr("trapframe at 0x"); putstr(uptrtoa((uintptr_t) tf, 16)); putch('\n');
-    print_registers(&tf->pushregs);
+    print_registers(&tf->regs);
     putstr("\tsstatus\t0x"); putstr(uptrtoa(tf->sstatus, 16)); putch('\n');
     putstr("\tsepc\t0x"); putstr(uptrtoa(tf->sepc, 16)); putch('\n');
     putstr("\tstval\t0x"); putstr(uptrtoa(tf->stval, 16)); putch('\n');

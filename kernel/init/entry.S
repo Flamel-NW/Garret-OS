@@ -38,7 +38,7 @@ kernel_entry:
     .align PAGE_SHIFT
     .global boot_stack    
 boot_stack:
-    .space KERN_STACK_SIZE 
+    .space KERNEL_STACK_SIZE 
     .global boot_stack_top
 boot_stack_top:
 

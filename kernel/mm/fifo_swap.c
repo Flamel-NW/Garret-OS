@@ -48,39 +48,39 @@ static void check_fifo() {
     putstr("write Virt Page e in check_fifo\n");
     *(byte*) 0x5000 = 0x0e;
     ASSERT(g_num_page_fault == 5);
-    // swap out a
-    putstr("write Virt Page f in check_fifo\n");
+
+    putstr("\nwrite Virt Page f in check_fifo (swap out a)\n");
     *(byte*) 0x6000 = 0x0f;
     ASSERT(g_num_page_fault == 6);
-    putstr("write Virt Page b in check_fifo\n");
+    putstr("\nwrite Virt Page b in check_fifo\n");
     *(byte*) 0x2000 = 0x0b;
     ASSERT(g_num_page_fault == 6);
-    // swap out b
-    putstr("write Virt Page a in check_fifo\n");
+
+    putstr("\nwrite Virt Page a in check_fifo (swap out b)\n");
     *(byte*) 0x1000 = 0x0a;
     ASSERT(g_num_page_fault == 7);
-    // swap out c
-    putstr("write Virt Page b in check_fifo\n");
+
+    putstr("\nwrite Virt Page b in check_fifo (swap out c)\n");
     *(byte*) 0x2000 = 0x0b;
     ASSERT(g_num_page_fault == 8);
-    // swap out d
-    putstr("write Virt Page c in check_fifo\n");
+
+    putstr("\nwrite Virt Page c in check_fifo (swap out d)\n");
     *(byte*) 0x3000 = 0x0c;
     ASSERT(g_num_page_fault == 9);
-    // swap out e
-    putstr("write Virt Page d in check_fifo\n");
+
+    putstr("\nwrite Virt Page d in check_fifo (swap out e)\n");
     *(byte*) 0x4000 = 0x0d;
     ASSERT(g_num_page_fault == 10);
-    // swap out f
-    putstr("write Virt Page e in check_fifo\n");
+
+    putstr("\nwrite Virt Page e in check_fifo (swap out f)\n");
     *(byte*) 0x5000 = 0x0e;
     ASSERT(g_num_page_fault == 11);
-    // swap out a
-    putstr("write Virt Page f in check_fifo\n");
+
+    putstr("\nwrite Virt Page f in check_fifo (swap out a)\n");
     *(byte*) 0x6000 = 0x0f;
     ASSERT(g_num_page_fault == 12);
-    // swap out b
-    putstr("write Virt Page a in check_fifo\n");
+
+    putstr("\nwrite Virt Page a in check_fifo (swap out b)\n");
     ASSERT(*(byte*) 0x1000 == 0x0a);
     *(byte*) 0x1000 = 0x0a;
     ASSERT(g_num_page_fault == 13);

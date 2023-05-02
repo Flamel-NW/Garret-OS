@@ -99,7 +99,6 @@
     # restore sp last
     ld x2, 2 * REGBYTES(sp)
 
-    # addi sp, sp, 36 * REGBYTES(sp)
     .endm
 
 
@@ -118,3 +117,10 @@ trap_ret:
     RESTORE_ALL
     # return from the supervisor call
     sret
+
+    # void fork_ret(struct trapframe* tf); 
+    .global fork_ret
+fork_ret:
+    # set stack to this new process trapframe
+    move sp, a0
+    j trap_ret
