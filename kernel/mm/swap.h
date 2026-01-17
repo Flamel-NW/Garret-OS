@@ -30,18 +30,18 @@
 // 为了在页表项中区别 0 和 swap 分区的映射, 将 swap 分区的一个 page 空出来不用, 
 // 也就是说一个高24位不为0, 而最低位为0的PTE表示了一个放在硬盘上的页的起始扇区号
 
-typedef uintptr_t swap_entry_t;
+typedef u64 swap_entry_t;
 
 #define SWAP_SHIFT          8
 #define PAGE_SECT           (PAGE_SIZE / SECTION_SIZE)
 #define SWAP_MAX_OFFSET     (IDE_SECTIONS / PAGE_SECT)
 
-static inline swap_entry_t addr2swap(uintptr_t addr) {
+static inline swap_entry_t addr2swap(u64 addr) {
     return (addr >> PAGE_SHIFT) << SWAP_SHIFT;
 }
 
-static inline size_t swap_offset(swap_entry_t entry) {
-    size_t offset = entry >> SWAP_SHIFT;
+static inline u64 swap_offset(swap_entry_t entry) {
+    u64 offset = entry >> SWAP_SHIFT;
     ASSERT(offset > 0 && offset < SWAP_MAX_OFFSET);
     return offset;
 }
@@ -71,8 +71,8 @@ struct swap_manager {
     // Try to swap out a page
     void (*swap_out_page) (struct vm_manager* vmm, struct page** p_page);
 
-    // check the page replacement algorithm
-    void (*check) ();
+    // test the page replacement algorithm
+    void (*test) ();
 };
 
 void swap_init_vmm(struct vm_manager* vmm);
@@ -81,7 +81,7 @@ void swap_set_unswappable(struct vm_manager* vmm, struct page* page);
 
 void init_swap();
 
-void swap_out(struct vm_manager* vmm, size_t num_pages);
-void swap_in(struct vm_manager* vmm, uintptr_t addr, struct page** p_page);
+void swap_out(struct vm_manager* vmm, u64 num_pages);
+void swap_in(struct vm_manager* vmm, u64 addr, struct page** p_page);
 
 #endif // __KERNEL_MM_SWAP_H__

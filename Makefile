@@ -5,6 +5,9 @@ CFLAGS += -fno-builtin -nostdinc # 不使用C语言内建函数 不搜索默认�
 CFLAGS += -fno-stack-protector #禁用堆栈保护
 CFLAGS += -ffunction-sections -fdata-sections # 将每个函数或符号创建为一个sections, 其中每个sections名与function或data名保持一致
 CFLAGS += -mcmodel=medany # https://blog.csdn.net/zoomdy/article/details/100699108
+CFLAGS += -march=rv64imac_zicsr -mabi=lp64 # 指定RISC-V架构和ABI
+CFLAGS += -fno-pic -fno-pie # 禁用位置无关代码 禁用位置无关可执行文件
+CFLAGS += $(DEFS)
 
 LD := riscv64-unknown-elf-ld
 
@@ -17,28 +20,36 @@ LD_FLAGS += --gc-sections  # 配合-ffunction-sections -fdata-sections, 不连�
 QEMU := qemu-system-riscv64
 
 QEMU_FLAGS := -machine virt -nographic 
-QEMU_DEBUG_FLAGS := -s -S
+QEMU_DEBUG_FLAGS := -s -S -monitor telnet:127.0.0.1:1235,server,nowait
 
-TARGET := GarretOS
+TARGET := Garret-OS
 
-# 自己写了一个python自动检测头文件路径的脚本小工具
+INCLUDE := -I lib \
+		   -I kernel/lib \
+		   -I kernel/debug \
+		   -I kernel/proc \
+		   -I kernel/mm \
+		   -I kernel/driver \
+		   -I kernel/sync \
+		   -I kernel/trap \
+		   -I kernel/syscall
 
-PYTHON := python3
-SCRIPT := include.py
+CSRCS := $(filter-out user/%, $(wildcard */*.c */*/*.c))
+SSRCS := $(filter-out user/%, $(wildcard */*.S */*/*.S))
 
-INCLUDE := $(shell $(PYTHON) $(SCRIPT))
+OBJS := $(CSRCS:.c=.o) $(SSRCS:.S=.o)
 
-# 当然你也可以像这样手动一条一条添加
-# INCLUDE := -I ./ 
+UBINS := $(wildcard user/*.out)
 
-CSOURCES := $(wildcard */*.c) $(wildcard */*/*.c) 
+.PHONY: clean qemu debug lib touch
 
-SSOURCES := $(wildcard */*.S) $(wildcard */*/*.S)
+build-%: 
+	$(V)$(MAKE) clean
+	$(V)$(MAKE) -C user $*.out
+	$(V)$(MAKE) "DEFS+=-DTEST=$*"
 
-OBJECTS := $(CSOURCES:.c=.o) $(SSOURCES:.S=.o)
-
-$(TARGET) : $(OBJECTS)
-	$(LD) $(LD_FLAGS) $(LD_SCRIPT) -o $@ $^
+$(TARGET) : $(OBJS)
+	$(LD) $(LD_FLAGS) $(LD_SCRIPT) -o $@ $^ --format=binary $(UBINS) --format=default
 
 qemu : $(TARGET)
 	$(QEMU) $(QEMU_FLAGS) \
@@ -48,8 +59,9 @@ debug : $(TARGET)
 	$(QEMU) $(QEMU_FLAGS) $(QEMU_DEBUG_FLAGS) \
 		-kernel $(TARGET)
 
-clean: 
-	rm -f $(OBJECTS) $(TARGET) $(IMG_TARGET)
+clean :
+	$(V)$(MAKE) -C user clean
+	rm -f $(OBJS) $(TARGET)
 
 %.o : %.c
 	$(CC) $(CFLAGS) $(INCLUDE) -o $@ -c $<

@@ -3,9 +3,9 @@
 
 #include "defs.h"
 
-extern volatile size_t g_ticks;
+extern volatile u64 g_ticks;
 
 void init_timer();
 void timer_next();
 
-#endif
+#endif // __KERNEL_DRIVER_TIMER_H__

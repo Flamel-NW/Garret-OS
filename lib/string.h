@@ -3,15 +3,15 @@
 
 #include "defs.h"
 
-size_t strlen(const char* s);
+u64 strlen(const char* s);
 
-int32_t strcmp(const char* s1, const char* s2);
+i32 strcmp(const char* s1, const char* s2);
 
 char* strcpy(char* dst, const char* src);
 
 char* strrev(char* s);
 
-void* memset(void* s, char c, size_t n);
-void* memcpy(void* dst, const void* src, size_t n);
+void* memset(void* s, char c, u64 n);
+void* memcpy(void* dst, const void* src, u64 n);
 
 #endif // __LIB_STRING_H__

@@ -1,14 +1,13 @@
 #include "memlayout.h"
 
-    .section .text, "ax", %progbits
+# 必须写.text.kernel_entry不能写.text, 与kernel.ld中保持一致, 否则不会把kernel_entry放到最前面
+    .section .text.kernel_entry, "ax", %progbits
     .global kernel_entry
 kernel_entry:
     # t0的高20位 := 三级页表的虚拟地址的高20位 即虚拟页号
     lui t0, %hi(boot_page_table_sv39)
-    # t1 := 0xFFFFFFFF40000000 即虚实映射偏移量
-    li t1, 0xFFFFFFFFC0000000 - 0x80000000
-    # t0减去虚实映射偏移量 0xFFFFFFFF40000000, 变为三级页表的物理地址
-    sub t0, t0, t1
+    # Zero-extend word: 将低 32 位零扩展到 64 位 相当于减去虚实映射偏移量 0x FFFFFFFF 00000000
+    zext.w t0, t0     
     # t0 >>= 12, 变为三级页表的物理页号
     srli t0, t0, 12
 
@@ -50,8 +49,8 @@ boot_page_table_sv39:
     .zero 8 * 2
     # 0x80000000 map to 0x80000000 (1G)
     .quad (0x80000 << 10) | 0xcf # VRWXD
-    # 前508个页表项设置为0, 因此 V = 0, 意味着是空的(unmapped) 
-    .zero 8 * 508
-    # 0xFFFFFFFFC0000000 map to 0x80000000 (1G)
+    # 中间507个页表项设置为0, 因此 V = 0, 意味着是空的(unmapped) 
+    .zero 8 * 507
+    # 0x FFFFFFFF 80000000 map to 0x 00000000 80000000 (1G)
     # 设置最后一个页表项, PPN = 0x80000, 标志位VRWXD均为1
     .quad (0x80000 << 10) | 0xcf # VRWXD

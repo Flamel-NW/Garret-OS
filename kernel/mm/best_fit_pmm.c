@@ -17,7 +17,7 @@ static void best_fit_init() {
     g_best_fit_free_area.num_free = 0;
 }
 
-static void best_fit_init_memmap(struct page* base, size_t n) {
+static void best_fit_init_memmap(struct page* base, u64 n) {
     ASSERT(n > 0);
     for (struct page* p = base; p < base + n; p++) {
         ASSERT(!(p->flags & PAGE_RESERVED));
@@ -29,13 +29,13 @@ static void best_fit_init_memmap(struct page* base, size_t n) {
     g_best_fit_free_area.num_free += n;
 }
 
-static struct page* best_fit_alloc_pages(size_t n) {
+static struct page* best_fit_alloc_pages(u64 n) {
     ASSERT(n > 0);
     if (n > g_best_fit_free_area.num_free) 
         return NULL;
     struct list* list = &g_best_fit_free_area.free_list;
     struct page* page = NULL;
-    uint32_t min_property = UINT32_MAX;
+    u32 min_property = UINT32_MAX;
     while ((list = list->next) != &g_best_fit_free_area.free_list) {
         struct page* p = LIST2PAGE(free_list_link, list);
         if (p->property >= n && p->property < min_property) {
@@ -58,7 +58,7 @@ static struct page* best_fit_alloc_pages(size_t n) {
     return page;
 }
 
-static void best_fit_free_pages(struct page* base, size_t n) {
+static void best_fit_free_pages(struct page* base, u64 n) {
     ASSERT(n > 0);
     struct page* p = base;
     for ( ; p < base + n; p++) {
@@ -99,11 +99,11 @@ static void best_fit_free_pages(struct page* base, size_t n) {
     }
 }
 
-static size_t best_fit_count_free_pages(void) {
+static u64 best_fit_count_free_pages() {
     return g_best_fit_free_area.num_free;
 }
 
-static void basic_check() {
+static void basic_test() {
     struct page* p1 = NULL;
     struct page* p2 = NULL;
     struct page* p3 = NULL;
@@ -118,9 +118,9 @@ static void basic_check() {
     ASSERT(p2->ref == 0);
     ASSERT(p3->ref == 0);
 
-    ASSERT((uintptr_t) p1 < FREE_END_VA);
-    ASSERT((uintptr_t) p2 < FREE_END_VA);
-    ASSERT((uintptr_t) p3 < FREE_END_VA);
+    ASSERT(page2pa(p1) < DRAM_END_PA);
+    ASSERT(page2pa(p2) < DRAM_END_PA);
+    ASSERT(page2pa(p3) < DRAM_END_PA);
 
     struct free_area temp_free_area = g_best_fit_free_area;
     init_list(&g_best_fit_free_area.free_list);
@@ -155,9 +155,9 @@ static void basic_check() {
     free_page(p3);
 }
 
-static void check_best_fit() {
-    uint32_t count = 0;
-    uint32_t total = 0;
+static void test_best_fit() {
+    u32 count = 0;
+    u32 total = 0;
     struct list* list = &g_best_fit_free_area.free_list;
     while ((list = list->next) != &g_best_fit_free_area.free_list) {
         struct page* p = LIST2PAGE(free_list_link, list);
@@ -167,7 +167,7 @@ static void check_best_fit() {
     }
     ASSERT(total == count_free_pages());
 
-    basic_check();
+    basic_test();
 
     struct page* p1 = alloc_pages(5);
     struct page* p2;
@@ -228,5 +228,5 @@ const struct pm_manager g_best_fit_pm_manager = {
     .alloc_pages = best_fit_alloc_pages,
     .free_pages = best_fit_free_pages,
     .count_free_pages = best_fit_count_free_pages,
-    .check = check_best_fit,
+    .test = test_best_fit,
 };

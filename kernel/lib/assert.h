@@ -3,9 +3,9 @@
 
 #include "defs.h"
 
-void warn(const char* file, const char* func, int32_t line, const char* str);
+void warn(const char* file, const char* func, i32 line, const char* str);
 
-void panic(const char* file, const char* func, int32_t line, const char* str) __attribute__((noreturn));
+void panic(const char* file, const char* func, i32 line, const char* str) __attribute__((noreturn));
 
 #define WARN(str) do warn(__FILE__, __func__, __LINE__, str); while(0)
 
@@ -14,4 +14,4 @@ void panic(const char* file, const char* func, int32_t line, const char* str) __
 #define ASSERT(x) do if(!(x)) PANIC("assertion failed: " #x); while(0)
     
 
-#endif
+#endif // __LIB_ASSERT_H__
