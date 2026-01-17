@@ -6,12 +6,12 @@
 #include "sbi.h"
 
 
-volatile size_t g_ticks;
+volatile u64 g_ticks;
 
-static uint64_t timebase = 100000;
+static u64 timebase = 100000;
 
-static uint64_t get_cycles() {
-    uint64_t n;
+static u64 get_cycles() {
+    u64 n;
     __asm__ volatile (
         "rdtime %0"
         : "=r" (n)

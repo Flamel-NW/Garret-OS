@@ -1,0 +1,15 @@
+CompileFlags:
+  # 强制禁止所有系统搜索路径
+  Add: [
+    "-target", "riscv64-unknown-elf", # 明确架构，防止按主机架构解析
+    "-nostdinc",                      # 核心：禁止标准系统头文件
+    "-nostdlibinc",                   # 禁止标准库头文件
+    "-nobuiltininc",                  # 连编译器自带的内置头文件也不要找
+    "-ffreestanding",                 # 独立环境声明
+    "-mabi=lp64",
+    "-march=rv64gc",
+    "-nobuiltininc"
+  ]
+
+Index:
+  Background: Build  # 开启后台索引，提高跳转速度

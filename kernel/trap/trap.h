@@ -3,54 +3,59 @@
 
 #include "defs.h"
 
-struct registers {
-    uintptr_t zero;     // Hard-wired zero
-    uintptr_t ra;       // Return address
-    uintptr_t sp;       // Stack pointer
-    uintptr_t gp;       // Global pointer
-    uintptr_t tp;       // Thread pointer
-    uintptr_t t0;       // Temporary
-    uintptr_t t1;       // Temporary
-    uintptr_t t2;       // Temporary
-    uintptr_t s0;       // Saved register/frame pointer
-    uintptr_t s1;       // Saved register
-    uintptr_t a0;       // Function argument/return value
-    uintptr_t a1;       // Function argument/return value
-    uintptr_t a2;       // Function argument
-    uintptr_t a3;       // Function argument
-    uintptr_t a4;       // Function argument
-    uintptr_t a5;       // Function argument
-    uintptr_t a6;       // Function argument
-    uintptr_t a7;       // Function argument
-    uintptr_t s2;       // Saved register
-    uintptr_t s3;       // Saved register
-    uintptr_t s4;       // Saved register
-    uintptr_t s5;       // Saved register
-    uintptr_t s6;       // Saved register
-    uintptr_t s7;       // Saved register
-    uintptr_t s8;       // Saved register
-    uintptr_t s9;       // Saved register
-    uintptr_t s10;      // Saved register
-    uintptr_t s11;      // Saved register
-    uintptr_t t3;       // Temporary
-    uintptr_t t4;       // Temporary
-    uintptr_t t5;       // Temporary
-    uintptr_t t6;       // Temporary
+// Kernel thread syscall magic number - used to identify kernel thread syscalls via ebreak
+#define EBREAK_MAGIC    0x7FF // Random magic number for ebreak-based syscalls (12-bit immediate: 2047)
+
+
+// General Purpose Registers
+struct gpr {
+    u64 zero;     // Hard-wired zero
+    u64 ra;       // Return address
+    u64 sp;       // Stack pointer
+    u64 gp;       // Global pointer
+    u64 tp;       // Thread pointer
+    u64 t0;       // Temporary
+    u64 t1;       // Temporary
+    u64 t2;       // Temporary
+    u64 s0;       // Saved register/frame pointer
+    u64 s1;       // Saved register
+    u64 a0;       // Function argument/return value
+    u64 a1;       // Function argument/return value
+    u64 a2;       // Function argument
+    u64 a3;       // Function argument
+    u64 a4;       // Function argument
+    u64 a5;       // Function argument
+    u64 a6;       // Function argument
+    u64 a7;       // Function argument
+    u64 s2;       // Saved register
+    u64 s3;       // Saved register
+    u64 s4;       // Saved register
+    u64 s5;       // Saved register
+    u64 s6;       // Saved register
+    u64 s7;       // Saved register
+    u64 s8;       // Saved register
+    u64 s9;       // Saved register
+    u64 s10;      // Saved register
+    u64 s11;      // Saved register
+    u64 t3;       // Temporary
+    u64 t4;       // Temporary
+    u64 t5;       // Temporary
+    u64 t6;       // Temporary
 };
 
 struct trapframe {
-    struct registers regs;      // General registers
-    uintptr_t sstatus;          // Supervisor Status Register
-    uintptr_t sepc;             // Supervisor Exception Program Counter
+    struct gpr gpr;         // General Purpose Registers
+    u64 sstatus;            // Supervisor Status Register
+    u64 sepc;               // Supervisor Exception Program Counter
     // warning: 'sbadaddr' is a deprecated alias for 'stval'
-    uintptr_t stval;            // Supervisor Trap Value Register
-    uintptr_t scause;           // Supervisor Cause Register
+    u64 stval;              // Supervisor Trap Value Register
+    u64 scause;             // Supervisor Cause Register
 };
 
 void trap(struct trapframe* tf);
 void init_idt();
 
 void print_trapframe(struct trapframe* tf);
-void print_registers(struct registers* regs);
+void print_registers(struct gpr* p_gpr);
 
 #endif // __KERNEL_TRAP_TRAP_H__

@@ -11,11 +11,11 @@
 #include "vmm.h"
 #include "proc.h"
 
-int32_t init_kernel() __attribute__((noreturn));
+i32 init_kernel() __attribute__((noreturn));
 
-int32_t init_kernel() {
+i32 init_kernel() {
     // 清bss段
-    extern byte edata[], end[];
+    extern u8 edata[], end[];
     memset(edata, 0, end - edata);
 
     putstr("\n\n---Garret-OS is loading...---\n");
@@ -31,7 +31,7 @@ int32_t init_kernel() {
     init_idt();
 
     init_swap();
-    check_vmm();
+    test_vmm();
 
     init_proc();
 

@@ -12,14 +12,17 @@
 #define SSTATUS_SPIE    0x00000020
 #define SSTATUS_UBE     0x00000040
 #define SSTATUS_SPP     0x00000100
+#define SSTATUS_SUM     0x00040000
 
 // V II: P71
-#define SCAUSE_INTR ((uint64_t) 1 << 63)
+#define SCAUSE_INTR ((u64) 1 << 63)
 
+// interrupt
 #define SCAUSE_SSI  (0x1 | SCAUSE_INTR) // Supervisor software interrupt
 #define SCAUSE_STI  (0x5 | SCAUSE_INTR) // Supervisor timer interrupt
 #define SCAUSE_SEI  (0x9 | SCAUSE_INTR) // Supervisor external interrupt    
 
+// exception
 #define SCAUSE_IAM  0x00000000          // Instruction address misaligned
 #define SCAUSE_IAF  0x00000001          // Instruction access fault
 #define SCAUSE_II   0x00000002          // Illegal instruction
@@ -57,7 +60,7 @@
 
 // CSRR rd, csr - V I: P140
 #define CSRR(csr) ({                \
-    uint64_t rd;                    \
+    u64 rd;                    \
     __asm__ volatile (              \
         "csrr %0, " #csr            \
         : "=r" (rd)                 \
@@ -75,7 +78,7 @@
 
 // CSRRS rd, csr, rs1 - V I: P56
 #define CSRRS(csr, rs1) ({          \
-    uint64_t rd;                    \
+    u64 rd;                    \
     __asm__ volatile (              \
         "csrrs %0, " #csr ", %1"    \
         : "=r" (rd)                 \
@@ -86,7 +89,7 @@
 
 // CSRRC rd, csr, rs1 - V I: P56
 #define CSRRC(csr, rs1) ({          \
-    uint64_t rd;                    \
+    u64 rd;                    \
     __asm__ volatile (              \
         "csrrc %0, " #csr ", %1"    \
         : "=r" (rd)                 \
@@ -100,7 +103,7 @@
 // "A" 代表一个存放在通用寄存器中的地址
 
 #define AMO_OP_D(op, rs2, rs1) ({   \
-    uint64_t rd;                    \
+    u64 rd;                         \
     __asm__ volatile (              \
         "amo" #op ".d %0, %2, %1"   \
         : "=r" (rd), "+A" (rs1)     \

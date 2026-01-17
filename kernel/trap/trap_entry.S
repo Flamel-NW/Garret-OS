@@ -1,9 +1,23 @@
 #include "riscv.h"
 
+    # 启用替代宏语法，允许在宏中使用更灵活的语法
+    .altmacro
+    .align 2
     # .macro ~ .endm 定义汇编宏
     .macro SAVE_ALL
+    LOCAL restore_kernel_sp
+    LOCAL save_context
 
-    csrw sscratch, sp
+    # If coming from userspace, preserve the user stack pointer and load
+    # the kernel stack pointer. if coming from kernelspace, sscratch will 
+    # contain 0, and we should continue on the current stack
+    csrrw sp, sscratch, sp
+    bnez sp, save_context
+
+restore_kernel_sp:
+    csrr sp, sscratch
+
+save_context:
     addi sp, sp, -36 * REGBYTES
 
     # save x registers
@@ -57,10 +71,21 @@
 
 
     .macro RESTORE_ALL
+    LOCAL save_kernel_sp
+    LOCAL restore_context
 
     ld s1, 32 * REGBYTES(sp)
     ld s2, 33 * REGBYTES(sp)
 
+    andi s0, s1, SSTATUS_SPP
+    bnez s0, restore_context
+
+save_kernel_sp:
+    # Save unwound kernel stack pointer in sscratch
+    addi s0, sp, 36 * REGBYTES
+    csrw sscratch, s0
+    
+restore_context:
     csrw sstatus, s1
     csrw sepc, s2
 
@@ -96,7 +121,7 @@
     ld x30, 30 * REGBYTES(sp)
     ld x31, 31 * REGBYTES(sp)
 
-    # restore sp last
+    # restore sp(x2) last
     ld x2, 2 * REGBYTES(sp)
 
     .endm

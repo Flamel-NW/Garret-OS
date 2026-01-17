@@ -12,7 +12,7 @@
 // | Gigapage Table | Megapage Table |   Page Table   | Offset within Page  |
 // +----------------+----------------+----------------+---------------------+
 // |-- GPTX(addr) --|-- MPTX(addr) --|--- PTX(addr) --|-- PAGE_OFF(addr) ---|
-// |-------------------PPN(addr)----------------------|
+// |-------------------VPN(addr)----------------------|
 
 // RISC-V uses 39-bit virtual address to access 56-bit physical address!
 // Sv39 virtual address:
@@ -30,8 +30,8 @@
 // |  PPN[2] | PPN[1] | PPN[0] |Reserved|D|A|G|U|X|W|R|V|
 // +---------+----+---+--------+--------+---------------+
 
-typedef uintptr_t ppn_t;        // physical page number
-typedef uintptr_t pte_t;        // page table entry
+typedef u64 ppn_t;        // physical page number
+typedef u64 pte_t;        // page table entry
 
 #define PT_SHIFT    9 
 #define PT_SIZE     (1 << PT_SHIFT)
@@ -44,36 +44,38 @@ typedef uintptr_t pte_t;        // page table entry
 #define GPTX_SHIFT  (MPTX_SHIFT + PT_SHIFT)
 
 
-static inline uintptr_t get_ptx(uintptr_t addr) {
+static inline u64 get_ptx(u64 addr) {
     return (addr >> PTX_SHIFT) & 0x1FF;
 }
 
-static inline uintptr_t get_mptx(uintptr_t addr) {
+static inline u64 get_mptx(u64 addr) {
     return (addr >> MPTX_SHIFT) & 0x1FF;
 }
 
-static inline uintptr_t get_gptx(uintptr_t addr) {
+static inline u64 get_gptx(u64 addr) {
     return (addr >> GPTX_SHIFT) & 0x1FF;
 }
 
-static inline uintptr_t get_offset(uintptr_t addr) {
+static inline u64 get_offset(u64 addr) {
     return addr & 0xFFF;
 }
 
-static inline uintptr_t ptx2addr(uintptr_t gptx, uintptr_t mptx, 
-        uintptr_t ptx, uintptr_t offset) {
+static inline u64 ptx2addr(u64 gptx, u64 mptx, 
+                                 u64 ptx, u64 offset) {
     return (gptx << GPTX_SHIFT) | (mptx << MPTX_SHIFT) | (ptx << PTX_SHIFT) | offset;
 }
 
-#define PTE_V   0x001   // Valid
-#define PTE_R   0x002   // Read
-#define PTE_W   0x004   // Write
-#define PTE_X   0x008   // Execute
-#define PTE_U   0x010   // User
-#define PTE_G   0x020   // Global
-#define PTE_A   0x040   // Accessed
-#define PTE_D   0x080   // Dirty
-#define PTE_RSW 0x300   // Reserved
+#define PTE_V       0x001   // Valid
+#define PTE_R       0x002   // Read
+#define PTE_W       0x004   // Write
+#define PTE_X       0x008   // Execute
+#define PTE_U       0x010   // User
+#define PTE_G       0x020   // Global
+#define PTE_A       0x040   // Accessed
+#define PTE_D       0x080   // Dirty
+#define PTE_RSW     0x300   // Reserved
+
+#define PTE_USER    (PTE_V | PTE_R | PTE_W | PTE_X | PTE_U)
 
 #define PTE_SHIFT   10
 
@@ -83,13 +85,13 @@ static inline uintptr_t ptx2addr(uintptr_t gptx, uintptr_t mptx,
 // that convert Page to other data types, such as physical address
 struct page {
     struct list free_list_link;     // free list link
-    uint32_t ref;                   // page frame's reference counter
-    uint32_t flags;                 // array of flags tha describe the status of the page frame
-    uint32_t property;              // the num of free block, used in first fit pm manager
+    u32 ref;                   // page frame's reference counter
+    u32 flags;                 // array of flags tha describe the status of the page frame
+    u32 property;              // the num of free block, used in first fit pm manager
 
     // used for page replace algorithm
     struct list pra_list_link;
-    uintptr_t pra_addr;
+    u64 pra_addr;
 };
 
 // Flags describing the status of a page frame
@@ -110,7 +112,7 @@ struct page {
 
 struct free_area {
     struct list free_list;  // the list header
-    size_t num_free;      // number of free pages in this free list
+    u64 num_free;      // number of free pages in this free list
 };
 
 

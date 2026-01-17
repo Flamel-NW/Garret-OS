@@ -2,27 +2,29 @@
 
 #include "defs.h"
 #include "stdio.h"
-#include "intr.h"
+#include "syscall.h"
+#include "errno.h"
 #include "string.h"
 
-static bool is_panic = 0;
+
+static bool is_panic = false;
 
 static void panic_dead() __attribute__((noreturn));
 
 static void panic_dead() {
-    intr_disable();
-    while (1)
-        continue;;
+    sys_exit(-E_PANIC);
+    while (true)
+        continue;
 }
 
-static void putline(uint32_t line) {
+static void putline(u32 line) {
     if (!line) return;
     static char st[128];
     if (!line) {
         st[0] = '0';
         st[1] = '\0';
     } else {
-        uint8_t sp = 0;
+        u8 sp = 0;
         while (line) {
             st[sp++] = line % 10 + '0';
             line /= 10;
@@ -33,8 +35,8 @@ static void putline(uint32_t line) {
     putstr(st);
 }
 
-void warn(const char* file, const char* func, int32_t line, const char* str) {
-    putstr("kernel warning at file: ");
+void warn(const char* file, const char* func, i32 line, const char* str) {
+    putstr("user warning at file: ");
     putstr(file);
     putstr(", func: ");
     putstr(func);
@@ -46,9 +48,9 @@ void warn(const char* file, const char* func, int32_t line, const char* str) {
     putch('\n');
 }
 
-void panic(const char* file, const char* func, int32_t line, const char* str) {
+void panic(const char* file, const char* func, i32 line, const char* str) {
     if (!is_panic) {
-        putstr("kernel panic at file: ");
+        putstr("user panic at file: ");
         putstr(file);
         putstr(", func: ");
         putstr(func);

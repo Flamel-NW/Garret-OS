@@ -1,0 +1,21 @@
+{
+    "configurations": [
+    {
+        "type": "lldb",
+        "request": "custom",
+        "name": "Qeme Debug",
+        "preLaunchTask": "Qemu Debug",
+        "targetCreateCommands": [
+                // 加载你本地的 ELF 文件，这样 VS Code 才能显示代码
+                "target create ${workspaceFolder}/Garret-OS",
+            ],
+            "processCreateCommands": [
+                // 核心：直接连接到那个已经在占用 1234 的程序
+                "gdb-remote localhost:1234",
+                // 自动加载用户程序的符号表
+                "target modules add user/exit.out",
+                "target modules load --file user/exit.out --slide 0x0"
+            ]
+        }
+    ]
+}

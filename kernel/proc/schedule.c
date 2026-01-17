@@ -1,6 +1,22 @@
-#include "sched.h"
+#include "schedule.h"
 
 #include "intr.h"
+#include "sync.h"
+
+
+void wakeup_proc(struct pcb* proc) {
+    ASSERT(proc->state != PROC_ZOMBIE);
+    bool intr_flag = local_intr_save();
+    {
+        if (proc->state != PROC_RUNNABLE) {
+            proc->state = PROC_RUNNABLE;
+            proc->wait_state = WAIT_NONE;
+        } else {
+            WARN("wakeup runnable process.\n");
+        }
+    }
+    local_intr_restore(intr_flag);
+}
 
 void schedule() {
     bool intr_flag = local_intr_save();

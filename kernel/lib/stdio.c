@@ -22,7 +22,7 @@ char getch() {
 }
 
 char* getstr(char* str) {
-    uint32_t sp = 0;
+    u32 sp = 0;
     char ch;
     while ((ch = getch())) {
         putch(ch);

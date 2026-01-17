@@ -5,6 +5,8 @@
 #include "list.h"
 #include "page.h"
 #include "errno.h"
+#include "sync.h"
+
 
 static inline void flush_tlb() {
     __asm__ volatile ( "sfence.vma" );
@@ -19,14 +21,15 @@ struct vm_manager;
 struct vm_area {
     struct list list_link;  // linear list link which sorted by start addr of vma
     struct vm_manager* vmm; // the set of vma using the same GPT
-    uintptr_t vm_start;     // start addr of vma
-    uintptr_t vm_end;       // end addr of vma, not include the vm_end itself
-    uint32_t vm_flags;      // flags of vma
+    u64 vm_start;     // start addr of vma
+    u64 vm_end;       // end addr of vma, not include the vm_end itself
+    u32 vm_flags;      // flags of vma
 };
 
-#define VMA_READ    0
-#define VMA_WRITE   1
-#define VMA_EXEC    2
+#define VMA_READ    0x00000001
+#define VMA_WRITE   0x00000002
+#define VMA_EXEC    0x00000004
+#define VMA_STACK   0x00000008
 
 #define LIST2VMA(member, list)  \
     TO_STRUCT(struct vm_area, member, (list))
@@ -36,26 +39,39 @@ struct vm_area {
 struct vm_manager {
     struct list vma_list;       // linear list link which sorted by start addr of vma
     struct vm_area* vma_curr;   // current accessed vma, used for speed purpose
-    pte_t* p_gpte;              // the GPTE of these vma
-    uint32_t vma_count;         // the count of these vma
+    pte_t* p_gpt;               // the GPT of these vma
+    u32 vma_count;              // the count of these vma
     struct list* pra_list;      // the private data for swap manager
+    u32 use_count;              // the number off process which shared the vmm
+    lock_t lock;                // mutex for using dum_mmap fun to duplicat the vmm
 };
 
-extern struct vm_manager* g_check_vmm;
+extern struct vm_manager* g_test_vmm;
 
-extern volatile uint32_t g_num_page_fault;
+extern volatile u32 g_num_page_fault;
 
-void check_vmm();
+void test_vmm();
 
 // init_vmm - alloc a vm_manager & initialize it
 struct vm_manager* init_vmm();
 
-struct vm_area* init_vma(uintptr_t vm_start, uintptr_t vm_end, uint32_t vm_flags);
+// del_vmm - free vmm and vmm internal fields
+void del_vmm(struct vm_manager* vmm);
+
+struct vm_area* init_vma(u64 vm_start, u64 vm_end, u32 vm_flags);
 
 // add_vma - insert vma in vmm's vma_list
 void add_vma(struct vm_manager* vmm, struct vm_area* vma);
 
-struct vm_area *find_vma(struct vm_manager *vmm, uintptr_t addr);
-int32_t handle_page_fault(struct vm_manager* vmm, uintptr_t addr);
+struct vm_area *find_vma(struct vm_manager *vmm, u64 addr);
+i32 handle_page_fault(struct vm_manager* vmm, u64 addr);
 
-#endif
+bool check_vmm(struct vm_manager* vmm, u64 addr, u64 len, bool write);
+
+i32 dup_vmm(struct vm_manager* from, struct vm_manager* to);
+
+void del_vmas(struct vm_manager* vmm);
+
+i32 vm_map(struct vm_manager* vmm, u64 addr, u64 len, u32 vm_flags, struct vm_area** vma_store);
+
+#endif // __KERNEL_MM_VMM_H__
