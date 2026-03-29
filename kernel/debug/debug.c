@@ -1,8 +1,6 @@
 #include "debug.h"
 #include "defs.h"
-#include "memlayout.h"
 #include "stdio.h"
-#include "stdlib.h"
 #include "pmm.h"
 
 
@@ -12,10 +10,10 @@
 void print_kernel_info() {
     extern u8 etext[], edata[], end[], init_kernel[];
     putstr("Special kernel symbols:\n");
-    putstr("\tentry\t\t0x"); putstr(u64toa((u64) init_kernel, 16)); putstr("\t(virtual)\n");
-    putstr("\tetext\t\t0x"); putstr(u64toa((u64) etext, 16)); putstr("\t(virtual)\n");
-    putstr("\tedata\t\t0x"); putstr(u64toa((u64) edata, 16)); putstr("\t(virtual)\n");
-    putstr("\tend\t\t0x"); putstr(u64toa((u64) end, 16)); putstr("\t(virtual)\n\n");
+    putstr("\tentry\t\t0x"); put_u64((u64) init_kernel, 16); putstr("\t(virtual)\n");
+    putstr("\tetext\t\t0x"); put_u64((u64) etext, 16); putstr("\t(virtual)\n");
+    putstr("\tedata\t\t0x"); put_u64((u64) edata, 16); putstr("\t(virtual)\n");
+    putstr("\tend\t\t0x"); put_u64((u64) end, 16); putstr("\t(virtual)\n\n");
 }
 
 void print_memory_info() {
@@ -44,21 +42,21 @@ void print_pages_info () {
     putstr("Pages infomation:\n");
 
     putstr("\tg_pages begin\n"); 
-    putstr("\t\t\t0x"); putstr(u64toa((u64) g_pages, 16)); putstr("\t(virtual)\n");
+    putstr("\t\t\t0x"); put_u64((u64) g_pages, 16); putstr("\t(virtual)\n");
     
     putstr("\tg_pages end\n"); 
     putstr("\t\t\t0x"); 
-    putstr(u64toa((u64) (g_pages + g_num_qemu_pages + g_num_kernel_pages + g_num_free_pages), 16));
+    put_u64((u64) (g_pages + g_num_qemu_pages + g_num_kernel_pages + g_num_free_pages), 16);
     putstr("\t(virtual)\n");
     
     putstr("\tnumber of qemu-reserved pages (0 ~ DRAM_BEGIN)\n");
-    putstr("\t\t\t"); putstr(u64toa((u64) g_num_qemu_pages, 10)); putch('\n');
+    putstr("\t\t\t"); put_u64((u64) g_num_qemu_pages, 10); putch('\n');
 
     putstr("\tnumber of kernel-reserved pages (DRAM_BEGIN ~ KERNEL_END)\n");
-    putstr("\t\t\t"); putstr(u64toa((u64) g_num_kernel_pages, 10)); putch('\n');
+    putstr("\t\t\t"); put_u64((u64) g_num_kernel_pages, 10); putch('\n');
 
     putstr("\tnumber of free pages (USER_BEGIN ~ USER_END)\n");
-    putstr("\t\t\t"); putstr(u64toa((u64) g_num_free_pages, 10)); 
+    putstr("\t\t\t"); put_u64((u64) g_num_free_pages, 10); 
     putstr("\n\n");
 }
 

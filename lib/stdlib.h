@@ -2,20 +2,18 @@
 #define __LIB_STDLIB_H__
 
 #include "defs.h"
-#include "assert.h"
 
 static inline char u8toc(u8 value) {
-    ASSERT(value - 10 + 'A' <= 'Z');
     return value < 10 ? value + '0' : value - 10 + 'A';
 }
 
-const char* u8toa(u8 value, u8 base);
+bool u8toa(u8 value, u8 base, char* buf, u64 len);
 
-const char* u32toa(u32 value, u8 base);
-const char* i32toa(i32 value, u8 base);
+bool u32toa(u32 value, u8 base, char* buf, u64 len);
+bool i32toa(i32 value, u8 base, char* buf, u64 len);
 
-const char* i64toa(i64 value, u8 base);
-const char* u64toa(u64 value, u8 base);
+bool i64toa(i64 value, u8 base, char* buf, u64 len);
+bool u64toa(u64 value, u8 base, char* buf, u64 len);
 
 // lib/hash.c
 

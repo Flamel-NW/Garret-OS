@@ -17,7 +17,6 @@
 #define SYS_MUNMAP      21
 #define SYS_SHMEM       22
 #define SYS_PUTC        30
-#define SYS_GPT         31
 
 /* SYS_FORK flags */
 #define CLONE_VM        0x00000001  // set if VM shared between processes

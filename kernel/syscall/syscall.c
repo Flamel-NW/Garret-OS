@@ -48,10 +48,6 @@ static i32 sys_putc(u64 arg[]) {
     return 0;
 }
 
-static i32 sys_gpt(u64 arg[]) {
-    return 0;
-}
-
 static i32 (*syscalls[]) (u64 arg[]) = {
     [SYS_EXIT]      = sys_exit,
     [SYS_FORK]      = sys_fork,
@@ -61,7 +57,6 @@ static i32 (*syscalls[]) (u64 arg[]) = {
     [SYS_KILL]      = sys_kill,
     [SYS_GETPID]    = sys_getpid,
     [SYS_PUTC]      = sys_putc,
-    [SYS_GPT]       = sys_gpt
 };
 
 void syscall() {
@@ -81,8 +76,8 @@ void syscall() {
         }
     }
     print_trapframe(tf);
-    putstr("undifined syscall "); putstr(i32toa(num, 10));
-    putstr(", pid = "); putstr(i32toa(g_curr_proc->pid, 10));
+    putstr("undifined syscall "); put_i64(num, 10);
+    putstr(", pid = "); put_i64(g_curr_proc->pid, 10);
     putstr(", name = "); putstr(g_curr_proc->name); putstr(".\n");
     PANIC("");
 }

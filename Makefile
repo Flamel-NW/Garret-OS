@@ -40,16 +40,23 @@ SSRCS := $(filter-out user/%, $(wildcard */*.S */*/*.S))
 OBJS := $(CSRCS:.c=.o) $(SSRCS:.S=.o)
 
 UBINS := $(wildcard user/*.out)
+DEFAULT_UBIN := user/hello.out
+LINK_UBINS := $(if $(UBINS),$(UBINS),$(DEFAULT_UBIN))
 
 .PHONY: clean qemu debug lib touch
 
 build-%: 
 	$(V)$(MAKE) clean
 	$(V)$(MAKE) -C user $*.out
+	$(V)sed -i -E "s#target modules add user/[^\" ]+\\.out#target modules add user/$*.out#g" .vscode/launch.json
+	$(V)sed -i -E "s#target modules load --file user/[^\" ]+\\.out --slide 0x0#target modules load --file user/$*.out --slide 0x0#g" .vscode/launch.json
 	$(V)$(MAKE) "DEFS+=-DTEST=$*"
 
-$(TARGET) : $(OBJS)
-	$(LD) $(LD_FLAGS) $(LD_SCRIPT) -o $@ $^ --format=binary $(UBINS) --format=default
+$(TARGET) : $(OBJS) $(LINK_UBINS)
+	$(LD) $(LD_FLAGS) $(LD_SCRIPT) -o $@ $(OBJS) --format=binary $(LINK_UBINS) --format=default
+	
+user/hello.out:
+	$(V)$(MAKE) -C user hello.out
 
 qemu : $(TARGET)
 	$(QEMU) $(QEMU_FLAGS) \

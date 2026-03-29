@@ -46,7 +46,7 @@ void kernel_proc_entry();
 void switch_proc(struct context* from, struct context* to);
 
 static u64 kernel_execve(const char* name, u8* binary, u64 size) {
-    putstr("kernel_execve: pid = "); putstr(i32toa(g_curr_proc->pid, 10));
+    putstr("kernel_execve: pid = "); put_i64(g_curr_proc->pid, 10);
     putstr(", name = \""); putstr(name); putstr("\"\n");
 
     u64 ret = 0;
@@ -64,7 +64,7 @@ static u64 kernel_execve(const char* name, u8* binary, u64 size) {
         : "i" (SYS_EXEC), "m" (name), "m" (len), "m" (binary), "m" (size), "i" (EBREAK_MAGIC)
         : "memory"
     );
-    putstr("ret = "); putstr(u64toa(ret, 10)); putch('\n');
+    putstr("ret = "); put_u64(ret, 10); putch('\n');
     return ret;
 }
 
@@ -81,7 +81,7 @@ static u64 kernel_execve(const char* name, u8* binary, u64 size) {
 static void set_links(struct pcb* proc) {
     add_list(&g_proc_list, g_proc_list.next, &proc->list_link);
     proc->younger = NULL;
-    if ((proc->older = proc->parent->older) != NULL) 
+    if ((proc->older = proc->parent->child) != NULL) 
         proc->older->younger = proc;
     proc->parent->child = proc;
     g_num_proc++;
@@ -116,16 +116,21 @@ static struct pcb* alloc_proc() {
     struct pcb* proc = malloc(sizeof(struct pcb));
     if (proc) {
         proc->state = PROC_UNINIT;
+        proc->wait_state = WAIT_NONE;
         proc->pid = -1;
         proc->run_times = 0;
         proc->kernel_stack = 0;
         proc->need_reschedule = false;
         proc->parent = NULL;
+        proc->child = NULL;
+        proc->younger = NULL;
+        proc->older = NULL;
         proc->vmm = NULL;
         proc->context = (struct context) { 0 };
         proc->tf = NULL;
         proc->p_gpt = g_bpt;  // Initialize to kernel boot page table (like ucore's boot_cr3)
         proc->flags = 0;
+        proc->exit_code = 0;
         memset(proc->name, 0, sizeof(proc->name));
     }
     return proc;
@@ -305,13 +310,13 @@ static i32 user_main(void* arg) {
 #ifdef TEST
     KERNEL_EXECVE_TEST(TEST);
 #else
-    KERNEL_EXECVE(exit);
+    KERNEL_EXECVE(hello);
 #endif
     PANIC("user_main execve failed!");
 }
 
 static i32 init_main(void* arg) {
-    putstr("this init process, pid = "); putstr(i32toa(g_curr_proc->pid, 10)); 
+    putstr("this init process, pid = "); put_i64(g_curr_proc->pid, 10); 
     putstr(", name = "); putstr(g_curr_proc->name); putch('\n');
     putstr("arg: "); putstr((const char*) arg); putch('\n');
 
@@ -362,8 +367,8 @@ i32 do_wait(i32 pid, i32* exit_code) {
 
     struct pcb* proc;
 
-    bool has_child = false;
     while (true) {
+        bool has_child = false;
         if (pid != 0) {
             proc = get_proc(pid);
             if (proc != NULL && proc->parent == g_curr_proc) {
@@ -378,6 +383,8 @@ i32 do_wait(i32 pid, i32* exit_code) {
                 if (proc->state == PROC_ZOMBIE) 
                     break;
             }
+            if (proc != NULL && proc->state == PROC_ZOMBIE)
+                break;
         }
 
         if (has_child) {
@@ -417,9 +424,9 @@ i32 do_wait(i32 pid, i32* exit_code) {
 //   3. call schedule to switch to other process
 i32 do_exit(i32 errno) {
     if (g_curr_proc == g_idle_proc)
-        PANIC("idle proc can not exit");
+        PANIC("idle proc can not exit\n");
     if (g_curr_proc == g_init_proc)
-        PANIC("init proc can not exit");
+        putstr("init proc exit.\n");
 
     struct vm_manager* vmm = g_curr_proc->vmm;
     if (vmm) {
@@ -461,7 +468,7 @@ i32 do_exit(i32 errno) {
     }
     local_intr_restore(intr_flag);
     schedule();
-    putstr("pid = "); putstr(i32toa(g_curr_proc->pid, 10));
+    putstr("pid = "); put_i64(g_curr_proc->pid, 10);
     PANIC(" -- do_exit will not return!!");
     return 0;
 }
@@ -646,7 +653,7 @@ i32 do_execve(const char* name, u64 len, u8* bin, u64 size) {
     i32 ret;
     if ((ret = load_bin(bin, size))) {
         do_exit(ret);
-        putstr("ret = "); putstr(i32toa(ret, 10));
+        putstr("ret = "); put_i64(ret, 10);
         PANIC(", already exit.\n");
     }
     strcpy(g_curr_proc->name, temp_name);
@@ -690,7 +697,6 @@ void init_proc() {
 
     g_num_proc++;
     g_curr_proc = g_idle_proc;
-    add_list(&g_proc_list, g_proc_list.next, &g_idle_proc->list_link);
 
     i32 pid = kernel_proc(init_main, "Garret-OS - init_main arg", 0);
     if (pid <= 0) 
@@ -711,9 +717,6 @@ void run_proc(struct pcb* proc) {
     if (proc != g_curr_proc) {
         struct pcb* prev = g_curr_proc;
         g_curr_proc = proc;
-        // putstr("switch from process: "); putstr(prev->name);
-        // putstr(" -> to process: "); putstr(g_curr_proc->name);
-        // putstr("\n\n");
         bool intr_flag = local_intr_save();
         {
             g_curr_proc = proc;

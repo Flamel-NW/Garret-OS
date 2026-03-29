@@ -21,15 +21,17 @@ void wakeup_proc(struct pcb* proc) {
 void schedule() {
     bool intr_flag = local_intr_save();
     {
+        g_curr_proc->need_reschedule = false;
         struct pcb* proc = NULL;
-        struct list* list = &g_curr_proc->list_link;
+        struct list* list = (g_curr_proc == g_idle_proc) ? &g_proc_list : &g_curr_proc->list_link;
+        struct list* iter = list;
         do {
-            if ((list = list->next) != &g_proc_list) {
-                proc = LIST2PCB(list_link, list);
+            if ((iter = iter->next) != &g_proc_list) {
+                proc = LIST2PCB(list_link, iter);
                 if (proc->state == PROC_RUNNABLE)
                     break;
             }
-        } while (list != &g_curr_proc->list_link);
+        } while (iter != list);
 
         if (!proc || proc->state != PROC_RUNNABLE)
             proc = g_idle_proc;

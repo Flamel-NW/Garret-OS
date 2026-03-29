@@ -56,10 +56,6 @@ i32 sys_putc(u64 c) {
     return syscall(SYS_PUTC, c);
 }
 
-i32 sys_gpt() {
-    return syscall(SYS_GPT);
-}
-
 i32 sys_getpid() {
     return syscall(SYS_GETPID);
 }

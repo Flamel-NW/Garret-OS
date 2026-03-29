@@ -45,9 +45,9 @@ void swap_out(struct vm_manager* vmm, u64 num_pages) {
         ASSERT(*p_pte & PTE_V);
 
         write_swap_ide(addr2swap(page->pra_addr), page);
-        putstr("swap out. store page in addr 0x"); putstr(u64toa(addr, 16));
+        putstr("swap out. store page in addr 0x"); put_u64(addr, 16);
         putstr(" to disk swap entry ");
-        putstr(u64toa(addr2swap(page->pra_addr), 16));
+        put_u64(addr2swap(page->pra_addr), 16);
         putch('\n');
 
         *p_pte = addr2swap(page->pra_addr);
@@ -63,9 +63,9 @@ void swap_in(struct vm_manager* vmm, u64 addr, struct page** p_page) {
 
     pte_t* p_pte = get_pte(vmm->p_gpt, addr, 0);
     ASSERT(!(*p_pte & PTE_V));
-    putstr("swap in. load page in addr 0x"); putstr(u64toa(addr, 16));
+    putstr("swap in. load page in addr 0x"); put_u64(addr, 16);
     putstr(" from disk swap entry "); 
-    putstr(u64toa(swap_offset(*p_pte), 16));
+    put_u64(swap_offset(*p_pte), 16);
     putch('\n');
 
     read_swap_ide((*p_pte), page);
@@ -117,8 +117,8 @@ static void test_swap() {
     }
     ASSERT(total == count_free_pages());
     
-    putstr("begin test swap: count "); putstr(u32toa(count, 10));
-    putstr(", total "); putstr(u32toa(total, 10)); putstr("\n\n");
+    putstr("begin test swap: count "); put_u64(count, 10);
+    putstr(", total "); put_u64(total, 10); putstr("\n\n");
 
     // now we set the physical pages environment
     struct vm_manager* vmm = init_vmm();
@@ -198,8 +198,8 @@ static void test_swap() {
         count--;
         total -= p->property;
     }
-    putstr("end test swap: count "); putstr(u32toa(count, 10));
-    putstr(", total "); putstr(u32toa(total, 10));
+    putstr("end test swap: count "); put_u64(count, 10);
+    putstr(", total "); put_u64(total, 10);
     putstr("\n\n");
 
     g_bpt[0] = 0;

@@ -179,7 +179,7 @@ i32 handle_page_fault(struct vm_manager* vmm, u64 addr) {
     g_num_page_fault++;
     // If the addr is in the range of a vmm's vma
     if (!vma || vma->vm_start > addr) {
-        putstr("invalid addr 0x"); putstr(u64toa(addr, 16));
+        putstr("invalid addr 0x"); put_u64(addr, 16);
         putstr(", and can not find it in vma\n");
         return errno;
     }
@@ -204,7 +204,7 @@ i32 handle_page_fault(struct vm_manager* vmm, u64 addr) {
             swap_set_swappable(vmm, page);
             page->pra_addr = addr;
         } else {
-            putstr("no swap_init but p_pte is 0x"); putstr(u64toa(*p_pte, 16));
+            putstr("no swap_init but p_pte is 0x"); put_u64(*p_pte, 16);
             putstr(" failed\n");
             return errno;
         }
@@ -261,9 +261,9 @@ static void test_vma_struct() {
     for (i32 i = 4; i >= 0; i--) {
         struct vm_area *vma_below_5= find_vma(vmm,i);
         if (vma_below_5) {
-           putstr("vma_below_5: i 0x"); putstr(i32toa(i, 16));
-           putstr(", start 0x"); putstr(u64toa(vma_below_5->vm_start, 16));
-           putstr(", end 0x"); putstr(u64toa(vma_below_5->vm_end, 16));
+           putstr("vma_below_5: i 0x"); put_i64(i, 16);
+           putstr(", start 0x"); put_u64(vma_below_5->vm_start, 16);
+           putstr(", end 0x"); put_u64(vma_below_5->vm_end, 16);
            putch('\n');
         }
         ASSERT(vma_below_5 == NULL);

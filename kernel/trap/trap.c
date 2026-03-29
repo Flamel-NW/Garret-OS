@@ -14,7 +14,7 @@
 
 
 static inline void print_ticks() {
-    putstr(u8toa(TICKS_NUM, 10)); putstr(" ticks\n");
+    put_u64(TICKS_NUM, 10); putstr(" ticks\n");
 }
 
 static inline bool check_kernel_trap(struct trapframe* tf) {
@@ -22,13 +22,13 @@ static inline bool check_kernel_trap(struct trapframe* tf) {
 }
 
 static inline void print_page_fault(struct trapframe* tf) {
-    putstr("page fault at 0x"); putstr(u64toa(tf->stval, 16));
+    putstr("page fault at 0x"); put_u64(tf->stval, 16);
     putch(check_kernel_trap(tf) ? 'K' : 'U'); putch('/');
     putch((tf->scause == SCAUSE_SPF) ? 'W' : 'R'); putch('\n');
 }
 
 static i32 page_fault_handler(struct trapframe* tf) {
-    putstr("paged fault at 0x"); putstr(u64toa(tf->stval, 16)); putch('\n');
+    putstr("paged fault at 0x"); put_u64(tf->stval, 16); putch('\n');
     if (g_test_vmm)
         print_page_fault(tf);
 
@@ -82,7 +82,7 @@ static void exception_handler(struct trapframe* tf) {
             break;
         case SCAUSE_B:
             putstr("Breakpoint\n");
-            putstr("ebreak caught at 0x"); putstr(u64toa(tf->sepc, 16));
+            putstr("ebreak caught at 0x"); put_u64(tf->sepc, 16);
             putstr("\n\n");
             tf->sepc += 2;
             if (tf->gpr.a7 == EBREAK_MAGIC) {
@@ -96,7 +96,7 @@ static void exception_handler(struct trapframe* tf) {
             putstr("Load access fault\n");
             if ((errno = page_fault_handler(tf))) {
                 print_trapframe(tf); 
-                putstr("ERRNO: "); putstr(i32toa(errno, 10)); putch('\n');
+                putstr("ERRNO: "); put_i64(errno, 10); putch('\n');
                 PANIC("handle page fault failed.");
             }
             break;
@@ -107,7 +107,7 @@ static void exception_handler(struct trapframe* tf) {
             putstr("Store/AMO access fault\n");
             if ((errno = page_fault_handler(tf))) {
                 print_trapframe(tf); 
-                putstr("ERRNO: "); putstr(i32toa(errno, 10)); putch('\n');
+                putstr("ERRNO: "); put_i64(errno, 10); putch('\n');
                 PANIC("handle page fault failed.");
             }
             break;
@@ -125,7 +125,7 @@ static void exception_handler(struct trapframe* tf) {
             putstr("Instruction page fault\n");
             if ((errno = page_fault_handler(tf))) {
                 print_trapframe(tf); 
-                putstr("ERRNO: "); putstr(i32toa(errno, 10)); putch('\n');
+                putstr("ERRNO: "); put_i64(errno, 10); putch('\n');
                 PANIC("handle page fault failed.");
             }
             break;
@@ -133,7 +133,7 @@ static void exception_handler(struct trapframe* tf) {
             putstr("Load page fault\n");
             if ((errno = page_fault_handler(tf))) {
                 print_trapframe(tf); 
-                putstr("ERRNO: "); putstr(i32toa(errno, 10)); putch('\n');
+                putstr("ERRNO: "); put_i64(errno, 10); putch('\n');
                 PANIC("handle page fault failed.");
             }
             break;
@@ -141,7 +141,7 @@ static void exception_handler(struct trapframe* tf) {
             putstr("Store/AMO page fault\n");
             if ((errno = page_fault_handler(tf))) {
                 print_trapframe(tf); 
-                putstr("ERRNO: "); putstr(i32toa(errno, 10)); putch('\n');
+                putstr("ERRNO: "); put_i64(errno, 10); putch('\n');
                 PANIC("handle page fault failed.");
             }
             break;
@@ -199,47 +199,47 @@ void init_idt() {
 }
 
 void print_trapframe(struct trapframe* tf) {
-    putstr("trapframe at 0x"); putstr(u64toa((u64) tf, 16)); putch('\n');
+    putstr("trapframe at 0x"); put_u64((u64) tf, 16); putch('\n');
     print_registers(&tf->gpr);
-    putstr("\tsstatus\t0x"); putstr(u64toa(tf->sstatus, 16)); putch('\n');
-    putstr("\tsepc\t0x"); putstr(u64toa(tf->sepc, 16)); putch('\n');
-    putstr("\tstval\t0x"); putstr(u64toa(tf->stval, 16)); putch('\n');
-    putstr("\tscause\t0x"); putstr(u64toa(tf->scause, 16)); putch('\n');
+    putstr("\tsstatus\t0x"); put_u64(tf->sstatus, 16); putch('\n');
+    putstr("\tsepc\t0x"); put_u64(tf->sepc, 16); putch('\n');
+    putstr("\tstval\t0x"); put_u64(tf->stval, 16); putch('\n');
+    putstr("\tscause\t0x"); put_u64(tf->scause, 16); putch('\n');
     putch('\n');
 }
 
 void print_registers(struct gpr* p_gpr) {
-    putstr("\tzero\t0x"); putstr(u64toa(p_gpr->zero, 16)); putch('\n');
-    putstr("\tra\t0x"); putstr(u64toa(p_gpr->ra, 16)); putch('\n');
-    putstr("\tsp\t0x"); putstr(u64toa(p_gpr->sp, 16)); putch('\n');
-    putstr("\tgp\t0x"); putstr(u64toa(p_gpr->gp, 16)); putch('\n');
-    putstr("\ttp\t0x"); putstr(u64toa(p_gpr->tp, 16)); putch('\n');
-    putstr("\tt0\t0x"); putstr(u64toa(p_gpr->t0, 16)); putch('\n');
-    putstr("\tt1\t0x"); putstr(u64toa(p_gpr->t1, 16)); putch('\n');
-    putstr("\tt2\t0x"); putstr(u64toa(p_gpr->t2, 16)); putch('\n');
-    putstr("\ts0\t0x"); putstr(u64toa(p_gpr->s0, 16)); putch('\n');
-    putstr("\ts1\t0x"); putstr(u64toa(p_gpr->s1, 16)); putch('\n');
-    putstr("\ta0\t0x"); putstr(u64toa(p_gpr->a0, 16)); putch('\n');
-    putstr("\ta1\t0x"); putstr(u64toa(p_gpr->a1, 16)); putch('\n');
-    putstr("\ta2\t0x"); putstr(u64toa(p_gpr->a2, 16)); putch('\n');
-    putstr("\ta3\t0x"); putstr(u64toa(p_gpr->a3, 16)); putch('\n');
-    putstr("\ta4\t0x"); putstr(u64toa(p_gpr->a4, 16)); putch('\n');
-    putstr("\ta5\t0x"); putstr(u64toa(p_gpr->a5, 16)); putch('\n');
-    putstr("\ta6\t0x"); putstr(u64toa(p_gpr->a6, 16)); putch('\n');
-    putstr("\ta7\t0x"); putstr(u64toa(p_gpr->a7, 16)); putch('\n');
-    putstr("\ts2\t0x"); putstr(u64toa(p_gpr->s2, 16)); putch('\n');
-    putstr("\ts3\t0x"); putstr(u64toa(p_gpr->s3, 16)); putch('\n');
-    putstr("\ts4\t0x"); putstr(u64toa(p_gpr->s4, 16)); putch('\n');
-    putstr("\ts5\t0x"); putstr(u64toa(p_gpr->s5, 16)); putch('\n');
-    putstr("\ts6\t0x"); putstr(u64toa(p_gpr->s6, 16)); putch('\n');
-    putstr("\ts7\t0x"); putstr(u64toa(p_gpr->s7, 16)); putch('\n');
-    putstr("\ts8\t0x"); putstr(u64toa(p_gpr->s8, 16)); putch('\n');
-    putstr("\ts9\t0x"); putstr(u64toa(p_gpr->s9, 16)); putch('\n');
-    putstr("\ts10\t0x"); putstr(u64toa(p_gpr->s10, 16)); putch('\n');
-    putstr("\ts11\t0x"); putstr(u64toa(p_gpr->s11, 16)); putch('\n');
-    putstr("\tt3\t0x"); putstr(u64toa(p_gpr->t3, 16)); putch('\n');
-    putstr("\tt4\t0x"); putstr(u64toa(p_gpr->t4, 16)); putch('\n');
-    putstr("\tt5\t0x"); putstr(u64toa(p_gpr->t5, 16)); putch('\n');
-    putstr("\tt6\t0x"); putstr(u64toa(p_gpr->t6, 16)); putch('\n');
+    putstr("\tzero\t0x"); put_u64(p_gpr->zero, 16); putch('\n');
+    putstr("\tra\t0x"); put_u64(p_gpr->ra, 16); putch('\n');
+    putstr("\tsp\t0x"); put_u64(p_gpr->sp, 16); putch('\n');
+    putstr("\tgp\t0x"); put_u64(p_gpr->gp, 16); putch('\n');
+    putstr("\ttp\t0x"); put_u64(p_gpr->tp, 16); putch('\n');
+    putstr("\tt0\t0x"); put_u64(p_gpr->t0, 16); putch('\n');
+    putstr("\tt1\t0x"); put_u64(p_gpr->t1, 16); putch('\n');
+    putstr("\tt2\t0x"); put_u64(p_gpr->t2, 16); putch('\n');
+    putstr("\ts0\t0x"); put_u64(p_gpr->s0, 16); putch('\n');
+    putstr("\ts1\t0x"); put_u64(p_gpr->s1, 16); putch('\n');
+    putstr("\ta0\t0x"); put_u64(p_gpr->a0, 16); putch('\n');
+    putstr("\ta1\t0x"); put_u64(p_gpr->a1, 16); putch('\n');
+    putstr("\ta2\t0x"); put_u64(p_gpr->a2, 16); putch('\n');
+    putstr("\ta3\t0x"); put_u64(p_gpr->a3, 16); putch('\n');
+    putstr("\ta4\t0x"); put_u64(p_gpr->a4, 16); putch('\n');
+    putstr("\ta5\t0x"); put_u64(p_gpr->a5, 16); putch('\n');
+    putstr("\ta6\t0x"); put_u64(p_gpr->a6, 16); putch('\n');
+    putstr("\ta7\t0x"); put_u64(p_gpr->a7, 16); putch('\n');
+    putstr("\ts2\t0x"); put_u64(p_gpr->s2, 16); putch('\n');
+    putstr("\ts3\t0x"); put_u64(p_gpr->s3, 16); putch('\n');
+    putstr("\ts4\t0x"); put_u64(p_gpr->s4, 16); putch('\n');
+    putstr("\ts5\t0x"); put_u64(p_gpr->s5, 16); putch('\n');
+    putstr("\ts6\t0x"); put_u64(p_gpr->s6, 16); putch('\n');
+    putstr("\ts7\t0x"); put_u64(p_gpr->s7, 16); putch('\n');
+    putstr("\ts8\t0x"); put_u64(p_gpr->s8, 16); putch('\n');
+    putstr("\ts9\t0x"); put_u64(p_gpr->s9, 16); putch('\n');
+    putstr("\ts10\t0x"); put_u64(p_gpr->s10, 16); putch('\n');
+    putstr("\ts11\t0x"); put_u64(p_gpr->s11, 16); putch('\n');
+    putstr("\tt3\t0x"); put_u64(p_gpr->t3, 16); putch('\n');
+    putstr("\tt4\t0x"); put_u64(p_gpr->t4, 16); putch('\n');
+    putstr("\tt5\t0x"); put_u64(p_gpr->t5, 16); putch('\n');
+    putstr("\tt6\t0x"); put_u64(p_gpr->t6, 16); putch('\n');
     putch('\n');
 }

@@ -12,4 +12,8 @@ char getch();
 
 char* getstr(char* str);
 
+void put_u64(u64 value, u8 base);
+
+void put_i64(i64 value, u8 base);
+
 #endif // __LIB_STDIO_H__

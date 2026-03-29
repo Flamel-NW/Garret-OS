@@ -5,7 +5,7 @@
 
 i32 main() {
     putstr("Hello world!.\n");
-    putstr("I am process "); putstr(i32toa(sys_getpid(), 10));
+    putstr("I am process "); put_i64(sys_getpid(), 10);
     putstr(".\nhello pass.\n");
     return 0;
 }

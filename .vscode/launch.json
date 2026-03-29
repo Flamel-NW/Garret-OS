@@ -12,9 +12,9 @@
             "processCreateCommands": [
                 // 核心：直接连接到那个已经在占用 1234 的程序
                 "gdb-remote localhost:1234",
-                // 自动加载用户程序的符号表
-                "target modules add user/exit.out",
-                "target modules load --file user/exit.out --slide 0x0"
+                // make build- 会自动设置指定用户程序的符号表
+                "target modules add user/hello.out",
+                "target modules load --file user/hello.out --slide 0x0"
             ]
         }
     ]

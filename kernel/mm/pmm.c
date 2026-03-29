@@ -408,7 +408,7 @@ u64 va2pa_mmu(pte_t* p_gpt, u64 va) {
     }
 
     putstr("\n=== RISC-V MMU Address Translation ===\n");
-    putstr("Virtual Address: 0x"); putstr(u64toa(va, 16)); putch('\n');
+    putstr("Virtual Address: 0x"); put_u64(va, 16); putch('\n');
 
     // Extract VPN and offset from virtual address
     u64 vpn2 = get_gptx(va);      // VPN[2] - bits 30:38
@@ -417,19 +417,19 @@ u64 va2pa_mmu(pte_t* p_gpt, u64 va) {
     u64 offset = get_offset(va);  // offset - bits 0:11
 
     putstr("\n[Step 1] Extract VPN and offset:\n");
-    putstr("  VPN[2] = 0x"); putstr(u64toa(vpn2, 16)); putstr(" (bits 30:38)\n");
-    putstr("  VPN[1] = 0x"); putstr(u64toa(vpn1, 16)); putstr(" (bits 21:29)\n");
-    putstr("  VPN[0] = 0x"); putstr(u64toa(vpn0, 16)); putstr(" (bits 12:20)\n");
-    putstr("  offset = 0x"); putstr(u64toa(offset, 16)); putstr(" (bits 0:11)\n");
+    putstr("  VPN[2] = 0x"); put_u64(vpn2, 16); putstr(" (bits 30:38)\n");
+    putstr("  VPN[1] = 0x"); put_u64(vpn1, 16); putstr(" (bits 21:29)\n");
+    putstr("  VPN[0] = 0x"); put_u64(vpn0, 16); putstr(" (bits 12:20)\n");
+    putstr("  offset = 0x"); put_u64(offset, 16); putstr(" (bits 0:11)\n");
 
     // Level 1: GPT (Gigapage Table)
     putstr("\n[Step 2] Level 1 - GPT (Gigapage Table):\n");
-    putstr("  GPT base VA: 0x"); putstr(u64toa((u64) p_gpt, 16)); putch('\n');
+    putstr("  GPT base VA: 0x"); put_u64((u64) p_gpt, 16); putch('\n');
     // GPT 的物理地址可以通过 va2page 获取
     struct page* gpt_page = va2page((u64) p_gpt);
     u64 gpt_pa = page2pa(gpt_page);
-    putstr("  GPT base PA: 0x"); putstr(u64toa(gpt_pa, 16)); putch('\n');
-    putstr("  Index (VPN[2]): "); putstr(u64toa(vpn2, 10)); putch('\n');
+    putstr("  GPT base PA: 0x"); put_u64(gpt_pa, 16); putch('\n');
+    putstr("  Index (VPN[2]): "); put_u64(vpn2, 10); putch('\n');
 
     if (vpn2 >= PT_SIZE) {
         putstr("  ERROR: Invalid VPN[2] index\n");
@@ -437,7 +437,7 @@ u64 va2pa_mmu(pte_t* p_gpt, u64 va) {
     }
     
     pte_t gpte = p_gpt[vpn2];
-    putstr("  GPT["); putstr(u64toa(vpn2, 10)); putstr("] = 0x"); putstr(u64toa(gpte, 16)); putch('\n');
+    putstr("  GPT["); put_u64(vpn2, 10); putstr("] = 0x"); put_u64(gpte, 16); putch('\n');
 
     if (!(gpte & PTE_V)) {
         putstr("  ERROR: GPT entry not valid (PTE_V = 0)\n");
@@ -450,13 +450,13 @@ u64 va2pa_mmu(pte_t* p_gpt, u64 va) {
     u64 mpt_va = pa2va(mpt_pa);
     pte_t* p_mpt = (pte_t*) mpt_va;
     
-    putstr("  PPN from GPT: 0x"); putstr(u64toa(gpt_ppn, 16)); putch('\n');
-    putstr("  MPT base PA: 0x"); putstr(u64toa(mpt_pa, 16)); putch('\n');
-    putstr("  MPT base VA: 0x"); putstr(u64toa(mpt_va, 16)); putch('\n');
+    putstr("  PPN from GPT: 0x"); put_u64(gpt_ppn, 16); putch('\n');
+    putstr("  MPT base PA: 0x"); put_u64(mpt_pa, 16); putch('\n');
+    putstr("  MPT base VA: 0x"); put_u64(mpt_va, 16); putch('\n');
 
     // Level 2: MPT (Megapage Table)
     putstr("\n[Step 3] Level 2 - MPT (Megapage Table):\n");
-    putstr("  Index (VPN[1]): "); putstr(u64toa(vpn1, 10)); putch('\n');
+    putstr("  Index (VPN[1]): "); put_u64(vpn1, 10); putch('\n');
 
     if (vpn1 >= PT_SIZE) {
         putstr("  ERROR: Invalid VPN[1] index\n");
@@ -464,7 +464,7 @@ u64 va2pa_mmu(pte_t* p_gpt, u64 va) {
     }
     
     pte_t mpte = p_mpt[vpn1];
-    putstr("  MPT["); putstr(u64toa(vpn1, 10)); putstr("] = 0x"); putstr(u64toa(mpte, 16)); putch('\n');
+    putstr("  MPT["); put_u64(vpn1, 10); putstr("] = 0x"); put_u64(mpte, 16); putch('\n');
 
     if (!(mpte & PTE_V)) {
         putstr("  ERROR: MPT entry not valid (PTE_V = 0)\n");
@@ -477,13 +477,13 @@ u64 va2pa_mmu(pte_t* p_gpt, u64 va) {
     u64 pt_va = pa2va(pt_pa);
     pte_t* p_pt = (pte_t*) pt_va;
     
-    putstr("  PPN from MPT: 0x"); putstr(u64toa(mpt_ppn, 16)); putch('\n');
-    putstr("  PT base PA: 0x"); putstr(u64toa(pt_pa, 16)); putch('\n');
-    putstr("  PT base VA: 0x"); putstr(u64toa(pt_va, 16)); putch('\n');
+    putstr("  PPN from MPT: 0x"); put_u64(mpt_ppn, 16); putch('\n');
+    putstr("  PT base PA: 0x"); put_u64(pt_pa, 16); putch('\n');
+    putstr("  PT base VA: 0x"); put_u64(pt_va, 16); putch('\n');
 
     // Level 3: PT (Page Table)
     putstr("\n[Step 4] Level 3 - PT (Page Table):\n");
-    putstr("  Index (VPN[0]): "); putstr(u64toa(vpn0, 10)); putch('\n');
+    putstr("  Index (VPN[0]): "); put_u64(vpn0, 10); putch('\n');
 
     if (vpn0 >= PT_SIZE) {
         putstr("  ERROR: Invalid VPN[0] index\n");
@@ -491,7 +491,7 @@ u64 va2pa_mmu(pte_t* p_gpt, u64 va) {
     }
     
     pte_t pte = p_pt[vpn0];
-    putstr("  PT["); putstr(u64toa(vpn0, 10)); putstr("] = 0x"); putstr(u64toa(pte, 16)); putch('\n');
+    putstr("  PT["); put_u64(vpn0, 10); putstr("] = 0x"); put_u64(pte, 16); putch('\n');
 
     if (!(pte & PTE_V)) {
         putstr("  ERROR: PT entry not valid (PTE_V = 0)\n");
@@ -501,7 +501,7 @@ u64 va2pa_mmu(pte_t* p_gpt, u64 va) {
     // Extract PPN from final PTE
     ppn_t pt_ppn = pte2ppn(pte);
     
-    putstr("  PPN from PT: 0x"); putstr(u64toa(pt_ppn, 16)); putch('\n');
+    putstr("  PPN from PT: 0x"); put_u64(pt_ppn, 16); putch('\n');
     putstr("  Flags: ");
     if (pte & PTE_R) putstr("R ");
     if (pte & PTE_W) putstr("W ");
@@ -518,8 +518,8 @@ u64 va2pa_mmu(pte_t* p_gpt, u64 va) {
 
     putstr("\n[Result] Physical Address:\n");
     putstr("  PA = (PPN << 12) | offset\n");
-    putstr("  PA = (0x"); putstr(u64toa(ppn, 16)); putstr(" << 12) | 0x"); putstr(u64toa(offset, 16)); putstr("\n");
-    putstr("  PA = 0x"); putstr(u64toa(pa, 16)); putstr("\n");
+    putstr("  PA = (0x"); put_u64(ppn, 16); putstr(" << 12) | 0x"); put_u64(offset, 16); putstr("\n");
+    putstr("  PA = 0x"); put_u64(pa, 16); putstr("\n");
     putstr("========================================\n\n");
 
     return pa;
