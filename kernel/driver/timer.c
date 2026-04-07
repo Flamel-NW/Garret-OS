@@ -23,7 +23,7 @@ void init_timer() {
     // enable timer interrupt in sie
     CSRRS(sie, SIR_STI);
 
-    timer_next();
+    set_next_timer();
 
     // initialized timer counter 'g_ticks' to zero
     g_ticks = 0;
@@ -31,6 +31,6 @@ void init_timer() {
     putstr("setup timer interrupts\n\n");
 }
 
-void timer_next() {
+void set_next_timer() {
     sbi_set_timer(get_cycles() + timebase);
 }

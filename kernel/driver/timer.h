@@ -6,6 +6,6 @@
 extern volatile u64 g_ticks;
 
 void init_timer();
-void timer_next();
+void set_next_timer();
 
 #endif // __KERNEL_DRIVER_TIMER_H__

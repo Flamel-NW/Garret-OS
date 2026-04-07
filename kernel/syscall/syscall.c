@@ -1,5 +1,6 @@
 #include "defs.h"
 #include "proc.h"
+#include "timer.h"
 #include "trap.h"
 #include "unistd.h"
 
@@ -38,7 +39,7 @@ static i32 sys_kill(u64 arg[]) {
     return do_kill(pid);
 }
 
-static i32 sys_getpid(u64 argp[]) {
+static i32 sys_getpid(u64 arg[]) {
     return g_curr_proc->pid;
 }
 
@@ -48,15 +49,26 @@ static i32 sys_putc(u64 arg[]) {
     return 0;
 }
 
+static i32 sys_gettime(u64 arg[]) {
+    return g_ticks * 10;
+}
+
+static i32 sys_set_priority(u64 arg[]) {
+    set_priority(arg[0]);
+    return 0;
+}
+
 static i32 (*syscalls[]) (u64 arg[]) = {
-    [SYS_EXIT]      = sys_exit,
-    [SYS_FORK]      = sys_fork,
-    [SYS_WAIT]      = sys_wait,
-    [SYS_EXEC]      = sys_exec,
-    [SYS_YIELD]     = sys_yield,
-    [SYS_KILL]      = sys_kill,
-    [SYS_GETPID]    = sys_getpid,
-    [SYS_PUTC]      = sys_putc,
+    [SYS_EXIT]          = sys_exit,
+    [SYS_FORK]          = sys_fork,
+    [SYS_WAIT]          = sys_wait,
+    [SYS_EXEC]          = sys_exec,
+    [SYS_YIELD]         = sys_yield,
+    [SYS_KILL]          = sys_kill,
+    [SYS_GETPID]        = sys_getpid,
+    [SYS_PUTC]          = sys_putc,
+    [SYS_GETTIME]       = sys_gettime,
+    [SYS_SET_PRIORITY]  = sys_set_priority,
 };
 
 void syscall() {

@@ -27,9 +27,9 @@ static inline void add_list(struct list* prev, struct list* next,
 }
 
 // del_list - Delete a list entry by making the prev/next entries point to each other.
-static inline void del_list(struct list* entry) {
-    entry->prev->next = entry->next;
-    entry->next->prev = entry->prev;
+static inline void del_list(struct list* list) {
+    list->prev->next = list->next;
+    list->next->prev = list->prev;
 }
 
 #endif // __LIB_LIST_H__

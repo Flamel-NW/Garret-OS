@@ -8,7 +8,7 @@ i32 main() {
     i32 pid;
     u64 code;
 
-    if ((pid = sys_fork()) == 0) {
+    if (!(pid = sys_fork())) {
         putstr("fork ok.\n");
         for (i32 i = 0; i < 10; i++) {
             sys_yield();

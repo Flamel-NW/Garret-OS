@@ -6,7 +6,6 @@
 #include "trap.h"
 #include "riscv.h"
 #include "stdlib.h"
-#include "intr.h"
 #include "unistd.h"
 #include "vmm.h"
 #include "elf.h"
@@ -81,7 +80,7 @@ static u64 kernel_execve(const char* name, u8* binary, u64 size) {
 static void set_links(struct pcb* proc) {
     add_list(&g_proc_list, g_proc_list.next, &proc->list_link);
     proc->younger = NULL;
-    if ((proc->older = proc->parent->child) != NULL) 
+    if ((proc->older = proc->parent->child)) 
         proc->older->younger = proc;
     proc->parent->child = proc;
     g_num_proc++;
@@ -91,9 +90,9 @@ static void set_links(struct pcb* proc) {
 static void remove_links(struct pcb* proc) {
     del_list(&proc->list_link);
 
-    if (proc->older != NULL)
+    if (proc->older)
         proc->older->younger = proc->younger;
-    if (proc->younger != NULL) 
+    if (proc->younger) 
         proc->younger->older = proc->older;
     else
         proc->parent->child = proc->older;
@@ -131,6 +130,15 @@ static struct pcb* alloc_proc() {
         proc->p_gpt = g_bpt;  // Initialize to kernel boot page table (like ucore's boot_cr3)
         proc->flags = 0;
         proc->exit_code = 0;
+        proc->run_queue = NULL;
+        proc->time_slice = 0;
+        proc->stride = 0;
+        proc->priority = 1;
+        
+        init_list(&proc->list_link);
+        init_list(&proc->hash_link);
+        init_list(&proc->run_link);
+        init_skew_heap(&(proc->run_pool));
         memset(proc->name, 0, sizeof(proc->name));
     }
     return proc;
@@ -332,7 +340,7 @@ static i32 init_main(void* arg) {
     if (proc && proc->pid == pid)
         strcpy(proc->name, "user_main");
 
-    while (do_wait(0, NULL) == 0)
+    while (!do_wait(0, NULL))
         schedule();
 
     putstr("all user-mode processes have quit.\n");
@@ -369,9 +377,9 @@ i32 do_wait(i32 pid, i32* exit_code) {
 
     while (true) {
         bool has_child = false;
-        if (pid != 0) {
+        if (pid) {
             proc = get_proc(pid);
-            if (proc != NULL && proc->parent == g_curr_proc) {
+            if (proc && proc->parent == g_curr_proc) {
                 has_child = true;
                 if (proc->state == PROC_ZOMBIE)
                     break;
@@ -383,7 +391,7 @@ i32 do_wait(i32 pid, i32* exit_code) {
                 if (proc->state == PROC_ZOMBIE) 
                     break;
             }
-            if (proc != NULL && proc->state == PROC_ZOMBIE)
+            if (proc && proc->state == PROC_ZOMBIE)
                 break;
         }
 
@@ -732,4 +740,10 @@ void run_idle() {
     while (true)
         if (g_curr_proc->need_reschedule)
             schedule();
+}
+
+// set the process's priority (bigger value will get more CPU time)
+void set_priority(u32 priority) {
+    putstr("set priority to "); put_u64(priority, 10); putch('\n');
+    g_curr_proc->priority = priority ? priority : 1;
 }

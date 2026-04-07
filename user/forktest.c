@@ -8,7 +8,7 @@ i32 main() {
     i32 pid;
     i32 n;
     for (n = 0; n < MAX_CHILD; n++) {
-        if ((pid = sys_fork()) == 0) {
+        if (!(pid = sys_fork())) {
             putstr("I am child "); put_i64(n, 10); putch('\n');
             sys_exit(0);
         }
@@ -16,14 +16,15 @@ i32 main() {
     }
 
     if (n > MAX_CHILD) {
-        PANIC("fork claimed to work "); put_i64(n, 10); putstr("times!\n");
+        putstr("fork claimed to work "); put_i64(n, 10); putstr("times!\n");
+        PANIC("");
     }
 
     for ( ; n > 0; n--) 
-        if (sys_wait(0, NULL) != 0)
+        if (sys_wait(0, NULL))
             PANIC("wait stopped early\n");
 
-    if (sys_wait(0, NULL) == 0)
+    if (!sys_wait(0, NULL))
         PANIC("wait got too many\n");
 
     putstr("forktest pass.\n");

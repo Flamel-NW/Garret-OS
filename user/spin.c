@@ -6,7 +6,7 @@
 i32 main() {
     i32 pid;
     putstr("I am the parent. Forking the child...\n");
-    if ((pid = sys_fork()) == 0) {
+    if (!(pid = sys_fork())) {
         putstr("I am the child. spinning ...\n");
         while (true)
             continue;
@@ -28,6 +28,4 @@ i32 main() {
 
     putstr("spin pass.\n");
     return 0;
-
-
 }

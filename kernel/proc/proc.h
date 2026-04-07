@@ -3,10 +3,10 @@
 
 #include "defs.h"
 #include "list.h"
-#include "errno.h"
 #include "page.h"
 #include "riscv.h"
 #include "memlayout.h"
+#include "skew_heap.h"
 
 // ------------- process/thread mechanism design&implementation -------------
 // (an simplified Linux process/thread mechanism )
@@ -94,22 +94,29 @@ struct pcb {
     struct list hash_link;
     u32 state;
     u32 wait_state;
-    i32 pid;                // process ID
-    i32 run_times;          // the running times of process
+    i32 pid;                            // process ID
+    i32 run_times;                      // the running times of process
     u64 kernel_stack;
-    volatile bool need_reschedule;   // need to be need_rescheduled to release CPU?
+    volatile bool need_reschedule;      // need to be need_rescheduled to release CPU?
     struct vm_manager* vmm;
-    struct context context;     // switch here to run process
-    struct trapframe* tf;       // trap frame for current interrupt
-    pte_t* p_gpt;           // the GPTE of this process
+    struct context context;             // switch here to run process
+    struct trapframe* tf;               // trap frame for current interrupt
+    pte_t* p_gpt;                       // the GPTE of this process
     u32 flags;
     char name[PROC_NAME_LEN];
-    i32 exit_code;          // be sent to the parent process
+    i32 exit_code;                      // be sent to the parent process
 
     struct pcb* parent;
     struct pcb* child;
     struct pcb* younger;
     struct pcb* older;
+
+    struct run_queue* run_queue;        // running queue contains Process
+    struct list run_link;              // the entry for occupying the CPU
+    int time_slice;                     // time slice for occupying the CPU
+    struct skew_heap run_pool;          // the entry in the run pool
+    u32 stride;                         // the current stride of the process
+    u32 priority;                       // the priority of process, set by set_priority
 };
 
 #define LIST2PCB(member, list) \
@@ -150,5 +157,7 @@ i32 do_yield();
 
 // do_kill - kill process with pid by set this process flags with PROC_FLAG_EXIT
 i32 do_kill(i32 pid);
+
+void set_priority(u32 priority);
 
 #endif // __KERNEL_PROC_H__

@@ -63,3 +63,12 @@ i32 sys_getpid() {
 i32 sys_kill(i32 pid) {
     return syscall(SYS_KILL, pid);
 }
+
+i32 sys_gettime(void) {
+    return syscall(SYS_GETTIME);
+}
+
+void sys_set_priority(u64 priority)
+{
+    syscall(SYS_SET_PRIORITY, priority);
+}

@@ -7,7 +7,7 @@
 i32 main() {
     i32 pid;
     putstr("I am the parent. Forking the child...\n");
-    if ((pid = sys_fork()) == 0) {
+    if (!(pid = sys_fork())) {
         putstr("I am the child.\n");
         sys_yield();
         sys_yield();

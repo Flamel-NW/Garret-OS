@@ -299,11 +299,11 @@ static void test_page_fault() {
     ASSERT(find_vma(vmm, addr) == vma);
 
     i32 sum = 0;
-    for (i32 i = 0; i < 100; i ++) {
+    for (i32 i = 0; i < 100; i++) {
         *(char *)(addr + i) = i;
         sum += i;
     }
-    for (i32 i = 0; i < 100; i ++) {
+    for (i32 i = 0; i < 100; i++) {
         sum -= *(char *)(addr + i);
     }
     ASSERT(sum == 0);

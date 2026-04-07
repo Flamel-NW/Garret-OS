@@ -10,5 +10,7 @@ i32 sys_wait(i32 pid, u64* wstatus);
 i32 sys_putc(u64 c);
 i32 sys_getpid();
 i32 sys_kill(i32 pid);
+i32 sys_gettime(void);
+void sys_set_priority(u64 priority);
 
 #endif // __USER_LIB_SYSCALL_H__

@@ -2,7 +2,6 @@
 #include "assert.h"
 #include "syscall.h"
 
-
 i32 parent;
 i32 pid1, pid2;
 
@@ -24,10 +23,10 @@ void loop() {
 void work() {
     putstr("child 2.\n");
     do_yield();
-    if (sys_kill(parent) == 0) {
+    if (!sys_kill(parent)) {
         putstr("waitkill parent pass.\n");
         do_yield();
-        if (sys_kill(pid1) == 0) {
+        if (!sys_kill(pid1)) {
             putstr("waitkill child1 pass.\n");
             sys_exit(0);
         }
@@ -37,12 +36,12 @@ void work() {
 
 i32 main() {
     parent = sys_getpid();
-    if ((pid1 = sys_fork()) == 0) 
+    if (!(pid1 = sys_fork())) 
         loop();
     
     ASSERT(pid1 > 0);
 
-    if ((pid2 = sys_fork()) == 0) 
+    if (!(pid2 = sys_fork())) 
         work();
     
     if (pid2 > 0) {

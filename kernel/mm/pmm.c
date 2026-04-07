@@ -175,7 +175,7 @@ void del_range(pte_t* p_gpt, u64 start, u64 end) {
         if (*p_pte)
             del_page(p_gpt, start);
         start += PAGE_SIZE;
-    } while(start != 0 && start < end);
+    } while(start && start < end);
 }
 
 void free_range(pte_t* p_gpt, u64 start, u64 end) {
@@ -190,7 +190,7 @@ void free_range(pte_t* p_gpt, u64 start, u64 end) {
             p_gpt[index] = 0;
         }
         start += PT_SIZE;
-    } while (start != 0 && start < end);
+    } while (start && start < end);
 }
 
 // copy_range - copy content of memory (start, end) of one process A to another process B

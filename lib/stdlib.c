@@ -40,7 +40,7 @@ bool u64toa(u64 value, u8 base, char* buf, u64 len) {
         buf[sp] = '\0';
         strrev(buf);
     } 
-    return value == 0;
+    return !value;
 }
 
 bool u8toa(u8 value, u8 base, char* buf, u64 len) {

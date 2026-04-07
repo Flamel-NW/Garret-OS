@@ -33,6 +33,7 @@ i32 init_kernel() {
     init_swap();
     test_vmm();
 
+    init_scheduler();
     init_proc();
 
     init_timer();

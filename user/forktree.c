@@ -17,7 +17,7 @@ void forkchild(const char* cur, char branch) {
     next[len] = branch;
     next[len + 1] = '\0';
 
-    if (sys_fork() == 0) {
+    if (!sys_fork()) {
         forktree(next);
         sys_yield();
         sys_exit(0);
@@ -25,7 +25,7 @@ void forkchild(const char* cur, char branch) {
 }
 
 void forktree(const char* cur) {
-    putstr("PID = "); put_i64(sys_getpid(), 10); 
+    putstr("PID = "); put_i64(sys_getpid(), 10);
     putstr(": I am '"); putstr(cur); putstr("'\n");
 
     forkchild(cur, '0');

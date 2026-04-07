@@ -4,11 +4,11 @@
 #include "defs.h"
 #include "riscv.h"
 #include "stdio.h"
-#include "stdlib.h"
 #include "timer.h"
 #include "vmm.h"
 #include "intr.h"
 #include "syscall.h"
+#include "proc.h"
 
 #define TICKS_NUM 100
 
@@ -55,9 +55,10 @@ static void interrupt_handler(struct trapframe* tf) {
             break;
         case SCAUSE_STI:
             // putstr("Supervisor timer interrupt\n");
-            timer_next();
-            if ((!(++g_ticks % TICKS_NUM)) && g_curr_proc)
-                g_curr_proc->need_reschedule = true;
+            set_next_timer();
+            g_ticks++;
+            if (g_curr_proc)
+                scheduler_proc_tick(g_curr_proc);
             break;
         case SCAUSE_SEI:
             putstr("Supervisor external interrupt\n");
