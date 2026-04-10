@@ -3,6 +3,7 @@
 #include "assert.h"
 #include "defs.h"
 #include "riscv.h"
+#include "schedule.h"
 #include "stdio.h"
 #include "timer.h"
 #include "vmm.h"
@@ -57,8 +58,7 @@ static void interrupt_handler(struct trapframe* tf) {
             // putstr("Supervisor timer interrupt\n");
             set_next_timer();
             g_ticks++;
-            if (g_curr_proc)
-                scheduler_proc_tick(g_curr_proc);
+            run_timers();
             break;
         case SCAUSE_SEI:
             putstr("Supervisor external interrupt\n");

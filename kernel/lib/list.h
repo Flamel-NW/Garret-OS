@@ -14,7 +14,7 @@ static inline void init_list(struct list* list) {
     list->prev = list->next = list;
 }
 
-static inline bool empty_list(struct list* list) {
+static inline bool list_empty(struct list* list) {
     return list == list->prev && list == list->next;
 }
 

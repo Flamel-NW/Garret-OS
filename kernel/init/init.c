@@ -1,5 +1,6 @@
 #include "defs.h"
 #include "intr.h"
+#include "schedule.h"
 #include "stdio.h"
 #include "stdlib.h"
 #include "string.h"

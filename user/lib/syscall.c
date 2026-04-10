@@ -48,8 +48,8 @@ i32 sys_fork() {
     return syscall(SYS_FORK);
 }
 
-i32 sys_wait(i32 pid, u64* wstatus) {
-    return syscall(SYS_WAIT, pid, wstatus);
+i32 sys_wait(i32 pid, u64* wait_status) {
+    return syscall(SYS_WAIT, pid, wait_status);
 }
 
 i32 sys_putc(u64 c) {
@@ -71,4 +71,8 @@ i32 sys_gettime(void) {
 void sys_set_priority(u64 priority)
 {
     syscall(SYS_SET_PRIORITY, priority);
+}
+
+i32 sys_sleep(u64 time) {
+    return syscall(SYS_SLEEP, time);
 }

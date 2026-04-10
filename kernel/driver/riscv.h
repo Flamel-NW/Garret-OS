@@ -60,7 +60,7 @@
 
 // CSRR rd, csr - V I: P140
 #define CSRR(csr) ({                \
-    u64 rd;                    \
+    u64 rd;                         \
     __asm__ volatile (              \
         "csrr %0, " #csr            \
         : "=r" (rd)                 \
@@ -78,7 +78,7 @@
 
 // CSRRS rd, csr, rs1 - V I: P56
 #define CSRRS(csr, rs1) ({          \
-    u64 rd;                    \
+    u64 rd;                         \
     __asm__ volatile (              \
         "csrrs %0, " #csr ", %1"    \
         : "=r" (rd)                 \
@@ -89,7 +89,7 @@
 
 // CSRRC rd, csr, rs1 - V I: P56
 #define CSRRC(csr, rs1) ({          \
-    u64 rd;                    \
+    u64 rd;                         \
     __asm__ volatile (              \
         "csrrc %0, " #csr ", %1"    \
         : "=r" (rd)                 \

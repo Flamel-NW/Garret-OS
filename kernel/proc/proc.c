@@ -9,11 +9,14 @@
 #include "unistd.h"
 #include "vmm.h"
 #include "elf.h"
+#include "monitor.h"
 
 
 #define HASH_SHIFT      10
 #define HASH_LIST_SIZE  (1 << 10)
-#define PID_HASH(x)     (hash32(x, HASH_SHIFT))
+static inline u32 pid_hash(i32 pid) {
+    return hash32(pid, HASH_SHIFT);
+}
 
 // hash list for process set based on pid
 static struct list g_hash_list[HASH_LIST_SIZE];
@@ -102,7 +105,7 @@ static void remove_links(struct pcb* proc) {
 
 // hash_proc - add proc into proc hash_list
 static void hash_proc(struct pcb* proc) {
-    add_list(&g_hash_list[PID_HASH(proc->pid)], g_hash_list[PID_HASH(proc->pid)].next, &proc->hash_link);
+    add_list(&g_hash_list[pid_hash(proc->pid)], g_hash_list[pid_hash(proc->pid)].next, &proc->hash_link);
 }
 
 // unhash_proc - delete proc from proc hash_list
@@ -204,11 +207,11 @@ static i32 copy_vmm(struct pcb* proc, u32 clone_flag) {
         return ret;
     }
 
-    lock(&(old_vmm->lock));
+    lock_vmm(old_vmm);
     {
         ret = dup_vmm(old_vmm, vmm);
     }
-    unlock(&(old_vmm->lock));
+    unlock_vmm(old_vmm);
 
     if (ret) {
         del_vmas(vmm);
@@ -305,7 +308,7 @@ i32 do_fork(u64 stack, struct trapframe* tf, u32 clone_flag) {
 // kernel_proc - create a kernel proc using "func" function
 // NOTE: the contents of temp trapframe tf will be copied to 
 //       proc->tf in do_fork-->copy_proc function
-static i32 kernel_proc(i32 (*func) (void *), void* arg, u32 clone_flag) {
+i32 kernel_proc(i32 (*func) (void *), void* arg, u32 clone_flag) {
     struct trapframe tf = { 0 };
     tf.gpr.s0 = (u64) func;
     tf.gpr.s1 = (u64) arg;
@@ -330,11 +333,14 @@ static i32 init_main(void* arg) {
 
     u64 num_free_pages = count_free_pages();
 
-    i32 pid = kernel_proc(user_main, NULL, 0);
+    test_phi_sem();
+    test_phi_cond();
+    putstr("test_phi succeed!\n\n");
 
+    i32 pid = kernel_proc(user_main, NULL, 0);
     if (pid <= 0) 
         PANIC("create user_name failed");
-    
+
     // Set process name for the newly created child process
     struct pcb* proc = g_curr_proc->child;
     if (proc && proc->pid == pid)
@@ -353,7 +359,7 @@ static i32 init_main(void* arg) {
     return 0;
 }
 
-static struct pcb* get_proc(i32 pid) {
+struct pcb* get_proc(i32 pid) {
     if (pid > 0 && pid < MAX_PID) {
         struct list* list = &g_proc_list;
         while ((list = list->next) != &g_proc_list) {
@@ -658,8 +664,8 @@ i32 do_execve(const char* name, u64 len, u8* bin, u64 size) {
         g_curr_proc->vmm = NULL;
     }
 
-    i32 ret;
-    if ((ret = load_bin(bin, size))) {
+    i32 ret = load_bin(bin, size);
+    if (ret) {
         do_exit(ret);
         putstr("ret = "); put_i64(ret, 10);
         PANIC(", already exit.\n");
@@ -746,4 +752,30 @@ void run_idle() {
 void set_priority(u32 priority) {
     putstr("set priority to "); put_u64(priority, 10); putch('\n');
     g_curr_proc->priority = priority ? priority : 1;
+}
+
+// do_sleep - set current process state to sleep and add timer with "time"
+//          - then cal scheduler. if process run again, delete timer first.
+i32 do_sleep(u32 time) {
+    if (!time)
+        return 0;
+
+    struct timer timer;
+    bool intr_flag = local_intr_save();
+    {
+        timer.proc = g_curr_proc;
+        timer.expires = time;
+        init_list(&(timer.timer_link));
+
+        g_curr_proc->state = PROC_SLEEPING;
+        g_curr_proc->wait_state = WAIT_TIMER;
+
+        add_timer(&timer);
+    }
+    local_intr_restore(intr_flag);
+
+    schedule();
+
+    del_timer(&timer);
+    return 0;
 }

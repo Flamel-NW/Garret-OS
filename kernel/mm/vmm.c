@@ -34,7 +34,7 @@ struct vm_manager* init_vmm() {
             vmm->pra_list = NULL;
 
         vmm->use_count = 0;
-        init_lock(&(vmm->lock));
+        init_sem(&(vmm->sem), 1);
     }
     return vmm;
 }
@@ -58,8 +58,8 @@ i32 vm_map(struct vm_manager* vmm, u64 addr, u64 len, u32 vm_flags, struct vm_ar
 
     ASSERT(vmm != NULL);
 
-    struct vm_area* vma;
-    if ((vma = find_vma(vmm, start)) && end > vma->vm_start)
+    struct vm_area* vma = find_vma(vmm, start);
+    if (vma && end > vma->vm_start)
         return -E_INVAL;
 
     if (!(vma = init_vma(start, end, vm_flags)))

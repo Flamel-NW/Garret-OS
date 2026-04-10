@@ -19,14 +19,14 @@ static void fifo_init_vmm(struct vm_manager* vmm) {
 static void fifo_set_unswappable(struct vm_manager* vmm, struct page* page) { }
 
 static void fifo_set_swappable(struct vm_manager* vmm, struct page* page) {
-    add_list(vmm->pra_list, vmm->pra_list->next, &page->pra_list_link);
+    add_list(vmm->pra_list, vmm->pra_list->next, &page->pra_link);
 }
 
 static void fifo_swap_out_page(struct vm_manager* vmm, struct page** p_page) {
-    ASSERT(!empty_list(vmm->pra_list));
+    ASSERT(!list_empty(vmm->pra_list));
     struct list* list = vmm->pra_list->prev;
     del_list(list);
-    *p_page = LIST2PAGE(pra_list_link, list);
+    *p_page = LIST2PAGE(pra_link, list);
 }
 
 static void test_fifo() {

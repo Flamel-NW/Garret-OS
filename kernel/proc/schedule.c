@@ -68,8 +68,8 @@ void schedule() {
         g_curr_proc->need_reschedule = false;
         if (g_curr_proc->state == PROC_RUNNABLE)
             scheduler_enqueue(g_curr_proc);
-        struct pcb* next_proc;
-        if ((next_proc = scheduler_pick_next()))
+        struct pcb* next_proc = scheduler_pick_next();
+        if (next_proc)
             scheduler_dequeue(next_proc);
         else
             next_proc = g_idle_proc;
@@ -77,6 +77,77 @@ void schedule() {
         next_proc->run_times++;
         if (next_proc != g_curr_proc)
             run_proc(next_proc);
+    }
+    local_intr_restore(intr_flag);
+}
+
+// add timer to g_timer_list
+void add_timer(struct timer *timer) {
+    bool intr_flag = local_intr_save();
+    {
+        ASSERT(timer->expires > 0 && timer->proc != NULL);
+        ASSERT(list_empty(&(timer->timer_link)));
+        struct list* list = g_timer_list.next;
+        while (list != &g_timer_list) {
+            struct timer* next_timer = LIST2TIMER(timer_link, list);
+            if (timer->expires < next_timer->expires) {
+                next_timer->expires -= timer->expires;
+                break;
+            }
+            timer->expires -= next_timer->expires;
+            list = list->next;
+        }
+        add_list(list->prev, list, &(timer->timer_link));
+    }
+    local_intr_restore(intr_flag);
+}
+
+// del timer from g_timer_list
+void del_timer(struct timer* timer) {
+    bool intr_flag = local_intr_save();
+    {
+        if (!list_empty(&(timer->timer_link))) {
+            if (timer->expires) {
+                struct list* list = timer->timer_link.next;
+                if (list != &g_timer_list) {
+                    struct timer* next_timer = LIST2TIMER(timer_link, list);
+                    next_timer->expires += timer->expires;
+                }
+            }
+            del_list(&(timer->timer_link));
+            init_list(&(timer->timer_link));
+        }
+    }
+    local_intr_restore(intr_flag);
+}
+
+// call scheduler to update tick related info, and check the timer is expired? if expired, then wakeup proc
+void run_timers() {
+    bool intr_flag = local_intr_save();
+    {
+        struct list* list = g_timer_list.next;
+        if (list != &g_timer_list) {
+            struct timer* timer = LIST2TIMER(timer_link, list);
+            ASSERT(timer->expires != 0);
+            timer->expires--;
+            while (!timer->expires) {
+                list = list->next;
+                struct pcb* proc = timer->proc;
+                if (proc->wait_state) {
+                    ASSERT(proc->wait_state & WAIT_INT);
+                }
+                else {
+                    putstr("pid = "); put_i64(proc->pid, 10); putch('\n');
+                    WARN("process's wait_state == 0.\n");
+                }
+                wakeup_proc(proc);
+                del_timer(timer);
+                if (list == &g_timer_list)
+                    break;
+                timer = LIST2TIMER(timer_link, list);
+            }
+        }
+        scheduler_proc_tick(g_curr_proc);
     }
     local_intr_restore(intr_flag);
 }

@@ -25,7 +25,7 @@ static void best_fit_init_memmap(struct page* base, u64 n) {
     }
     base->flags |= PAGE_PROPERTY;
     base->property = n;
-    add_list(&g_best_fit_free_area.free_list, g_best_fit_free_area.free_list.next, &base->free_list_link);
+    add_list(&g_best_fit_free_area.free_list, g_best_fit_free_area.free_list.next, &base->free_link);
     g_best_fit_free_area.num_free += n;
 }
 
@@ -37,19 +37,19 @@ static struct page* best_fit_alloc_pages(u64 n) {
     struct page* page = NULL;
     u32 min_property = UINT32_MAX;
     while ((list = list->next) != &g_best_fit_free_area.free_list) {
-        struct page* p = LIST2PAGE(free_list_link, list);
+        struct page* p = LIST2PAGE(free_link, list);
         if (p->property >= n && p->property < min_property) {
             page = p;
             min_property = p->property;
         }
     }
     if (page) {
-        del_list(&(page->free_list_link));
+        del_list(&(page->free_link));
         if (page->property > n) {
             struct page* p = page + n;
             p->property = page->property - n;
             p->flags |= PAGE_PROPERTY;
-            add_list(page->free_list_link.prev, page->free_list_link.next, &p->free_list_link);
+            add_list(page->free_link.prev, page->free_link.next, &p->free_link);
         }
         g_best_fit_free_area.num_free -= n;
         page->flags &= ~PAGE_PROPERTY;
@@ -70,31 +70,31 @@ static void best_fit_free_pages(struct page* base, u64 n) {
     g_best_fit_free_area.num_free += n;
 
     struct list* list = &g_best_fit_free_area.free_list;
-    while (list->next < &base->free_list_link && list->next != &g_best_fit_free_area.free_list) 
+    while (list->next < &base->free_link && list->next != &g_best_fit_free_area.free_list) 
         list = list->next;
-    add_list(list, list->next, &base->free_list_link);
+    add_list(list, list->next, &base->free_link);
 
     // 合并相邻空闲区域
-    list = base->free_list_link.prev;
+    list = base->free_link.prev;
     if (list != &g_best_fit_free_area.free_list) {
-        p = LIST2PAGE(free_list_link, list);
+        p = LIST2PAGE(free_link, list);
         if (p + p->property == base) {
             p->property += base->property;
             base->flags &= ~PAGE_PROPERTY;
             base->property = 0;
-            del_list(&base->free_list_link);
+            del_list(&base->free_link);
             base = p;
         }
     }
 
-    list = base->free_list_link.next;
+    list = base->free_link.next;
     if (list != &g_best_fit_free_area.free_list) {
-        p = LIST2PAGE(free_list_link, list);
+        p = LIST2PAGE(free_link, list);
         if (base + base->property == p) {
             base->property += p->property;
             p->flags &= ~PAGE_PROPERTY;
             p->property = 0;
-            del_list(&p->free_list_link);
+            del_list(&p->free_link);
         }
     }
 }
@@ -124,7 +124,7 @@ static void basic_test() {
 
     struct free_area temp_free_area = g_best_fit_free_area;
     init_list(&g_best_fit_free_area.free_list);
-    ASSERT(empty_list(&g_best_fit_free_area.free_list));
+    ASSERT(list_empty(&g_best_fit_free_area.free_list));
     g_best_fit_free_area.num_free = 0;
 
     ASSERT(alloc_page() == NULL);
@@ -141,7 +141,7 @@ static void basic_test() {
     ASSERT(alloc_page() == NULL);
 
     free_page(p1);
-    ASSERT(!empty_list(&g_best_fit_free_area.free_list));
+    ASSERT(!list_empty(&g_best_fit_free_area.free_list));
 
     struct page* p0;
     ASSERT((p0 = alloc_page()) == p1);
@@ -160,7 +160,7 @@ static void test_best_fit() {
     u32 total = 0;
     struct list* list = &g_best_fit_free_area.free_list;
     while ((list = list->next) != &g_best_fit_free_area.free_list) {
-        struct page* p = LIST2PAGE(free_list_link, list);
+        struct page* p = LIST2PAGE(free_link, list);
         ASSERT((p->flags & PAGE_PROPERTY) != 0);
         count++;
         total += p->property;
@@ -178,7 +178,7 @@ static void test_best_fit() {
 
     struct free_area temp_free_area = g_best_fit_free_area;
     init_list(&g_best_fit_free_area.free_list);
-    ASSERT(empty_list(&g_best_fit_free_area.free_list));
+    ASSERT(list_empty(&g_best_fit_free_area.free_list));
     ASSERT(alloc_page() == NULL);
     g_best_fit_free_area.num_free = 0;
 
@@ -212,7 +212,7 @@ static void test_best_fit() {
 
     list = &g_best_fit_free_area.free_list;
     while ((list = list->next) != &g_best_fit_free_area.free_list) {
-        struct page* p = LIST2PAGE(free_list_link, list);
+        struct page* p = LIST2PAGE(free_link, list);
         count--;
         total -= p->property;
     }

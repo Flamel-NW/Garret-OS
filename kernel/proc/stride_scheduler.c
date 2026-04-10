@@ -14,12 +14,10 @@ static i32 stride_comp_fn(void* left, void* right) {
 }
 
 // stride_init initializes the run queue with correct assignment for member variables, including:
-// - run_list: should be a empty list after initialization.
 // - run_pool: NULL
 // - num_proc: 0
 // - max_time_slice: no need here, the variable would be assigned by the caller.
 static void stride_init(struct run_queue* run_queue) {
-    init_list(&(run_queue->run_list));
     run_queue->run_pool = NULL;
     run_queue->num_proc = 0;
 }

@@ -58,6 +58,10 @@ static i32 sys_set_priority(u64 arg[]) {
     return 0;
 }
 
+static i32 sys_sleep(u64 arg[]) {
+    return do_sleep(arg[0]);
+}
+
 static i32 (*syscalls[]) (u64 arg[]) = {
     [SYS_EXIT]          = sys_exit,
     [SYS_FORK]          = sys_fork,
@@ -69,6 +73,7 @@ static i32 (*syscalls[]) (u64 arg[]) = {
     [SYS_PUTC]          = sys_putc,
     [SYS_GETTIME]       = sys_gettime,
     [SYS_SET_PRIORITY]  = sys_set_priority,
+    [SYS_SLEEP]         = sys_sleep,
 };
 
 void syscall() {

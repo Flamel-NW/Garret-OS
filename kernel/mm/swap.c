@@ -110,7 +110,7 @@ static void test_swap() {
     u32 total = 0;
     struct list* list = &get_free_area()->free_list;
     while ((list = list->next) != &get_free_area()->free_list) {
-        struct page* p = LIST2PAGE(free_list_link, list);
+        struct page* p = LIST2PAGE(free_link, list);
         ASSERT(p->flags & PAGE_PROPERTY);
         count++;
         total += p->property;
@@ -194,7 +194,7 @@ static void test_swap() {
     
     list = &get_free_area()->free_list;
     while ((list = list->next) != &get_free_area()->free_list) {
-        struct page* p = LIST2PAGE(free_list_link, list);
+        struct page* p = LIST2PAGE(free_link, list);
         count--;
         total -= p->property;
     }

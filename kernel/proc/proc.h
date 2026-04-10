@@ -62,8 +62,10 @@
 #define PROC_ZOMBIE     3   // almost dead, and wait parent proc to reclaim his resource
 
 #define WAIT_NONE       0x00000000                  // not waiting
-#define WAIT_CHILD      (0x00000001 | WAIT_INT)
 #define WAIT_INT        0x80000000                  // the wait state could be interrupted
+#define WAIT_SEM        0x00000100                  // wait kernel semaphore
+#define WAIT_CHILD      (0x00000001 | WAIT_INT)     // wait child process
+#define WAIT_TIMER      (0x00000002 | WAIT_INT)     // wait timer
 
 #define PROC_FLAG_EXIT  0x00000001                  // getting shutdown
 
@@ -112,8 +114,8 @@ struct pcb {
     struct pcb* older;
 
     struct run_queue* run_queue;        // running queue contains Process
-    struct list run_link;              // the entry for occupying the CPU
-    int time_slice;                     // time slice for occupying the CPU
+    struct list run_link;               // the entry for occupying the CPU
+    i32 time_slice;                     // time slice for occupying the CPU
     struct skew_heap run_pool;          // the entry in the run pool
     u32 stride;                         // the current stride of the process
     u32 priority;                       // the priority of process, set by set_priority
@@ -132,6 +134,10 @@ void init_proc();
 void run_idle() __attribute__((noreturn));
 
 void run_proc(struct pcb* proc);
+
+i32 kernel_proc(i32 (*func) (void *), void* arg, u32 clone_flag);
+
+struct pcb* get_proc(i32 pid);
 
 // do_wait - wait one OR any child with PROC_ZOMBIE state, and free memory space of 
 //         - kernel stack pcb of this child.
@@ -159,5 +165,9 @@ i32 do_yield();
 i32 do_kill(i32 pid);
 
 void set_priority(u32 priority);
+
+// do_sleep - set current process state to sleep and add timer with "time"
+//          - then cal scheduler. if process run again, delete timer first.
+i32 do_sleep(u32 time);
 
 #endif // __KERNEL_PROC_H__

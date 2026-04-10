@@ -84,13 +84,13 @@ static inline u64 ptx2addr(u64 gptx, u64 mptx,
 // physical page. In kernel/mm/pmm.h, you can find lots of useful functions
 // that convert Page to other data types, such as physical address
 struct page {
-    struct list free_list_link;     // free list link
+    struct list free_link;     // free list link
     u32 ref;                   // page frame's reference counter
     u32 flags;                 // array of flags tha describe the status of the page frame
     u32 property;              // the num of free block, used in first fit pm manager
 
     // used for page replace algorithm
-    struct list pra_list_link;
+    struct list pra_link;
     u64 pra_addr;
 };
 

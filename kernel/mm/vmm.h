@@ -6,6 +6,8 @@
 #include "page.h"
 #include "errno.h"
 #include "sync.h"
+#include "proc.h"
+#include "sem.h"
 
 
 static inline void flush_tlb() {
@@ -43,7 +45,8 @@ struct vm_manager {
     u32 vma_count;              // the count of these vma
     struct list* pra_list;      // the private data for swap manager
     u32 use_count;              // the number off process which shared the vmm
-    lock_t lock;                // mutex for using dum_mmap fun to duplicat the vmm
+    struct semaphore sem;       // mutex for using dup_vmm fun to duplicate the vmm
+    i32 owner_pid;
 };
 
 extern struct vm_manager* g_test_vmm;
@@ -73,5 +76,20 @@ i32 dup_vmm(struct vm_manager* from, struct vm_manager* to);
 void del_vmas(struct vm_manager* vmm);
 
 i32 vm_map(struct vm_manager* vmm, u64 addr, u64 len, u32 vm_flags, struct vm_area** vma_store);
+
+static inline void lock_vmm(struct vm_manager* vmm) {
+    if (vmm) {
+        down(&(vmm->sem));
+        if (g_curr_proc)
+            vmm->owner_pid = g_curr_proc->pid;
+    }
+}
+
+static inline void unlock_vmm(struct vm_manager* vmm) {
+    if (vmm) {
+        up(&(vmm->sem));
+        vmm->owner_pid = -1;
+    }
+}
 
 #endif // __KERNEL_MM_VMM_H__
