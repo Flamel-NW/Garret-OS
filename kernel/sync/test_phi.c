@@ -91,9 +91,7 @@ static void phi_test_sem(i32 phi) {
     if (g_phi_state_sem[phi] == HUNGRY && 
             g_phi_state_sem[left(phi)] != EATING &&
             g_phi_state_sem[right(phi)] != EATING) {
-        putstr("phi_test_sem: g_phi_state_sem["); put_i64(phi, 10); putstr("] will eating.\n");
         g_phi_state_sem[phi] = EATING;
-        putstr("phi_test_sem: up g_phi_sem["); put_i64(phi, 10); putstr("].\n");
         up(&g_phi_sem[phi]);
     }
 }
@@ -181,9 +179,7 @@ static void phi_test_cond(i32 phi) {
     if (g_phi_state_cond[phi] == HUNGRY &&
             g_phi_state_cond[left(phi)] != EATING &&
             g_phi_state_cond[right(phi)] != EATING) {
-        putstr("phi_test_cond: g_phi_state_cond["); put_i64(phi, 10); putstr("] will eating.\n");
         g_phi_state_cond[phi] = EATING;
-        putstr("phi_test_cond: signal g_phi_monitor->cond["); put_i64(phi, 10); putstr("].\n");
         signal_cond(&g_phi_monitor.cond[phi]);
     }
 }

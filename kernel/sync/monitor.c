@@ -21,11 +21,6 @@ void init_monitor(struct monitor* monitor, u64 num_cond) {
 
 // Unlock one of threads waiting on the cond var
 void signal_cond(struct cond* cond) {
-    putstr("cond_signal begin: 0x"); put_u64((u64) cond, 16);
-    putstr(", cond->count "); put_i64(cond->count, 10);
-    putstr(", cond->owner->next_count "); put_i64(cond->owner->next_count, 10);
-    putch('\n');
-
     if (cond->count > 0) {
         struct monitor* monitor = cond->owner;
         monitor->next_count++;
@@ -33,21 +28,11 @@ void signal_cond(struct cond* cond) {
         down(&(monitor->next));
         monitor->next_count--;
     }
-
-    putstr("cond_signal end: 0x"); put_u64((u64) cond, 16);
-    putstr(", cond->count "); put_i64(cond->count, 10);
-    putstr(", cond->owner->next_count "); put_i64(cond->owner->next_count, 10);
-    putch('\n');
 }
 
 // Suspend calling thread on a condition variable waiting for condition atomically unlock mutex in monitor,
 // and suspends calling threads on cond var after waking up locks mutex
 void wait_cond(struct cond* cond) {
-    putstr("wait_cond begin: 0x"); put_u64((u64) cond, 16);
-    putstr(", cond->count "); put_i64(cond->count, 10);
-    putstr(", cond->owner->next_count "); put_i64(cond->owner->next_count, 10);
-    putch('\n');
-
     cond->count++;
     struct monitor* monitor = cond->owner;
     if (monitor->next_count > 0)
@@ -56,9 +41,4 @@ void wait_cond(struct cond* cond) {
         up(&(monitor->mutex));
     down(&(cond->sem));
     cond->count--;
-
-    putstr("wait_cond end: 0x"); put_u64((u64) cond, 16);
-    putstr(", cond->count "); put_i64(cond->count, 10);
-    putstr(", cond->owner->next_count "); put_i64(cond->owner->next_count, 10);
-    putch('\n');
 }

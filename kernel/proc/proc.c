@@ -440,7 +440,7 @@ i32 do_exit(i32 errno) {
     if (g_curr_proc == g_idle_proc)
         PANIC("idle proc can not exit\n");
     if (g_curr_proc == g_init_proc)
-        putstr("init proc exit.\n");
+        putstr("init proc exit.\nBye Bye!\n\n");
 
     struct vm_manager* vmm = g_curr_proc->vmm;
     if (vmm) {
